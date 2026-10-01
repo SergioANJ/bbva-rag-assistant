@@ -1,0 +1,26 @@
+[project]
+name = "bbva-rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sergio Jimenez", email = "sergio.a.jimenez@outlook.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "loguru>=0.7.3",
+    "pydantic-settings>=2.15.0",
+]
+
+[project.scripts]
+bbva-rag = "bbva_rag:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
+]

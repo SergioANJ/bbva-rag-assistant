@@ -19,3 +19,6 @@ __pycache__/
 
 # Exploration outputs
 scripts/exploration/*.txt
+
+#Datos extraídos: el HTML sin procesar es pesado
+data/raw/

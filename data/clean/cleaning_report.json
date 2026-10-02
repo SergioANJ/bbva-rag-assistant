@@ -1,0 +1,41 @@
+{
+  "pages_in": 467,
+  "boilerplate_blocks_removed": [
+    "**Contáctanos**",
+    "Para resolver inquietudes adicionales o recibir ayuda personalizada."
+  ],
+  "dropped_too_short": [
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes",
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/cambiar-clave-principal-sucursal-virtual",
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/consultar-saldo-bancolombia-a-la-mano-sim",
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/ingresar-seccion-negocios",
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/resultados",
+    "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/transferir-con-llave-bancolombia",
+    "https://www.bancolombia.com/personas/app-bancolombia",
+    "https://www.bancolombia.com/personas/app-bancolombia/categorias/bolsillos",
+    "https://www.bancolombia.com/personas/app-bancolombia/categorias/gestionar-dia-a-dia",
+    "https://www.bancolombia.com/personas/app-bancolombia/categorias/gestionar-dia-a-dia/gastos",
+    "https://www.bancolombia.com/personas/app-bancolombia/tramites-solicitudes/inversion-virtual",
+    "https://www.bancolombia.com/personas/banco-para-todos/familia",
+    "https://www.bancolombia.com/personas/beneficios/ofertas",
+    "https://www.bancolombia.com/personas/beneficios/ofertas/detalle",
+    "https://www.bancolombia.com/personas/comprar-y-vender-casa/asegurar",
+    "https://www.bancolombia.com/personas/cupo-preaprobados",
+    "https://www.bancolombia.com/personas/documentos-legales/normas-facta",
+    "https://www.bancolombia.com/personas/movilidad/asegurar",
+    "https://www.bancolombia.com/personas/necesidades/mas-beneficios/ofertas",
+    "https://www.bancolombia.com/personas/necesidades/mas-beneficios/ofertas/usarapps",
+    "https://www.bancolombia.com/personas/productos-servicios/cuentas/ahorro/transaccional/ahorro-a-la",
+    "https://www.bancolombia.com/personas/productos-servicios/cuentas/ahorro/transaccional/ahorro-a-la-mano",
+    "https://www.bancolombia.com/personas/productos-servicios/cuentas/ahorro/transaccional/landing-cuenta-ahorros",
+    "https://www.bancolombia.com/personas/productos-servicios/seguros/vehiculos/www.sura.com",
+    "https://www.bancolombia.com/personas/productos-servicios/tarjetas-credito/referido-tarjeta-credito-joven",
+    "https://www.bancolombia.com/personas/productos-servicios/vinculacion-banco/leasing-bancolombia",
+    "https://www.bancolombia.com/personas/productos-servicios/vinculacion-banco/valores-bancolombia",
+    "https://www.bancolombia.com/personas/productos/tarjetas-credito/comparador",
+    "https://www.bancolombia.com/personas/solicitud-de-productos",
+    "https://www.bancolombia.com/personas/solicitud-documentos/certificaciones-bancarias"
+  ],
+  "duplicates_merged": 21,
+  "pages_out": 416
+}

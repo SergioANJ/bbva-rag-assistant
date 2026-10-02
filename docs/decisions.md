@@ -22,3 +22,176 @@ Cada decisión registra qué se eligió, por qué y qué alternativas se descart
 - **Por qué:** detecta valores inválidos al arrancar, centraliza los parámetros y
   evita valores fijos en el código.
 - **Patrón:** Singleton mediante `@lru_cache` en `get_settings()`.
+
+
+## ADR-004: Fuente de datos → Bancolombia (en lugar de BBVA Colombia)
+
+- **Fecha:** 2026-10-01
+- **Estado:** Aceptada. Validación de extracción en páginas de producto pendiente.
+
+### Contexto
+El enunciado propone https://www.bbva.com.co/ como fuente, pero permite explícitamente
+usar el sitio de otro banco.
+
+### Pruebas realizadas sobre BBVA Colombia
+Todas las pruebas usaron la página de producto `/personas/productos/inversion/cdt/online.html`.
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | `scrapy shell` con el User-Agent por defecto de Scrapy | **403 Forbidden** |
+| 2 | Análisis de la respuesta 403 | Página de bloqueo propia del banco ("Algo salió mal") con un Reference ID; la cabecera `Server` está oculta. El formato del ID es compatible con un WAF tipo Akamai. |
+| 3 | User-Agent identificable (`bbva-rag-assistant/0.1` + enlace al repositorio) | **403** |
+| 4 | User-Agent de navegador (Chrome en Windows) | **403** |
+| 5 | Script de sondeo con httpx sobre la portada y `robots.txt` | **403** en ambos |
+
+**Conclusión:** el bloqueo no depende solo del User-Agent. El sitio aplica una protección
+anti-bots que rechaza deliberadamente a los clientes automatizados.
+
+### Decisión ética
+No se intentó evadir la protección (navegadores automatizados con técnicas de camuflaje,
+rotación de IPs, etc.). Eludir una medida de seguridad puesta a propósito por un banco no es
+una práctica aceptable. Como el enunciado permite otro banco, se buscó una fuente que
+autorice el acceso automatizado.
+
+### Evaluación de alternativas
+Sondeo de la portada y del `robots.txt` de siete bancos colombianos, con User-Agent identificable:
+
+| Banco | Portada | robots.txt | Restricciones relevantes para `User-agent: *` |
+|---|---|---|---|
+| Bancolombia | 200 | 200 | Formularios, buscadores, PDFs, `/rest/`, preaprobados y solicitudes. Tiene sitemap índice. |
+| Davivienda | 200 | 200 | PDFs, `/documents/` y toda URL con parámetros (`?`). Tiene sitemap. |
+| Banco de Bogotá | 200 | 200 | Ninguna. Tiene sitemap. |
+| Banco Popular | 200 | 200 | No revisado. |
+| Banco de Occidente | 200 | 200 | No revisado. |
+| AV Villas | 200 | 200 | PDFs, zonas internas del CMS y URLs con parámetros. Tiene sitemap. |
+| Banco Caja Social | 200 | 200 | PDFs, `/portalserver/` y buscador. Tiene sitemap. |
+
+### Por qué Bancolombia
+1. Es el banco más grande del país y su sitio tiene amplio contenido de productos.
+2. Su `robots.txt` es detallado: indica con precisión qué rutas no deben rastrearse.
+3. Distingue entre bots de **entrenamiento** de IA (bloqueados: GPTBot, ClaudeBot,
+   Google-Extended, etc.) y bots de **búsqueda y consulta**, con un comentario que menciona
+   explícitamente el uso para RAG. Este proyecto no entrena modelos: consulta el contenido y
+   cita la fuente, que es el uso permitido.
+4. Publica un sitemap índice, que permite obtener la lista oficial de páginas en lugar de
+   descubrirlas solo siguiendo enlaces.
+
+**Plan B:** Banco de Bogotá, cuyo `robots.txt` no restringe ninguna ruta.
+
+### Pruebas realizadas sobre Bancolombia (`/personas`)
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Ver código fuente (`Ctrl+U`) | El HTML del servidor contiene el contenido de la página. |
+| 2 | Recargar con JavaScript desactivado | La página se sigue mostrando: el contenido principal se renderiza en el servidor. |
+| 3 | `scrapy shell` | **200**, 219.166 caracteres de HTML. |
+| 4 | Extraer texto con `body *::text` | 350 fragmentos, mezclados con CSS embebido y marcadores de plantilla del portal (`${title}`, `Web Content Viewer`). Confirma que se necesita una etapa de limpieza. |
+| 5 | Extraer con trafilatura | 629 caracteres de contenido poco representativo. Esperable: `/personas` es una portada de navegación sin un cuerpo principal. |
+
+### Consecuencias para el scraper
+- Se respetará `robots.txt` (`ROBOTSTXT_OBEY = True`).
+- Se excluyen los PDFs, porque la mayoría de los bancos evaluados los prohíbe en `robots.txt`.
+- Las páginas de portada aportan poco contenido. El valor está en las páginas de producto,
+  así que el descubrimiento de URLs se hará desde el sitemap.
+- Algunos componentes del portal son plantillas que se llenan con JavaScript (`${title}`).
+  Se debe verificar que el contenido de producto no dependa de ellos.
+
+### Pendiente
+- Validar la extracción con trafilatura en páginas de producto.
+
+
+### Validación en página de producto
+Prueba sobre `/personas/productos-servicios/inversiones/renta-fija`: trafilatura extrajo
+Markdown limpio (780 caracteres) con títulos de sección y descripciones reales de productos,
+sin menús, estilos ni marcadores de plantilla. Se confirma trafilatura como herramienta de
+limpieza.
+
+### Hallazgos del sitemap
+- El sitemap índice tiene cuatro secciones: personas, acerca de, centro de ayuda y
+  educación financiera.
+- El sitemap incluye páginas sin valor para el RAG (simuladores, canales de contacto,
+  páginas antiguas con sufijo `-viejo`). Se filtrarán por patrones de URL configurables.
+
+
+## ADR-005: Motor de scraping, alcance y estrategia de extracción
+
+- **Fecha:** 2026-10-01
+- **Estado:** Aceptada.
+
+### Motor: Scrapy con `SitemapSpider`
+- El sitio renderiza su contenido en el servidor: el contenido aparece en el código fuente
+  y la página se muestra con JavaScript desactivado (ver ADR-004). No se necesita un
+  navegador automatizado.
+- El sitio publica un sitemap índice con 756 URLs únicas. `SitemapSpider` las obtiene
+  directamente, sin depender del menú de navegación, que el portal arma con plantillas
+  JavaScript (`${title}`) y por eso no expone sus enlaces en el HTML.
+- Scrapy aporta de fábrica el respeto a `robots.txt`, reintentos, control de velocidad
+  y deduplicación de URLs.
+
+### Inventario del sitemap
+| Sitemap | URLs |
+|---|---|
+| personas | 440 |
+| acerca-de | 119 |
+| centro-de-ayuda | 170 |
+| educacion-financiera | 28 |
+| **Total únicas** | **756** |
+
+5 URLs están prohibidas por `robots.txt` (formularios y solicitudes de productos);
+Scrapy las omite con `ROBOTSTXT_OBEY = True`.
+
+### Medición de contenido por tipo de página
+Script: `scripts/exploration/measure_content.py`. Caracteres extraídos con trafilatura:
+
+| Tipo | Ejemplo | Caracteres | Observación |
+|---|---|---|---|
+| Producto | inversiones-digitales | 1.920 | Contenido real, con restos del portal |
+| Producto | renta-fija | 780 | Redirige a `valores.bancolombia.com` |
+| Simulador | simulador-cdt | 243 | Casi solo restos del portal |
+| Contacto | llamanos / chatea-con-nosotros | 169 / 169 | Texto genérico idéntico |
+| Ayuda | app-inversiones | 909 | Redirige a otra página del sitio con contenido real |
+| Historia | agrollanos | 2.217 | Narrativa institucional, no información de productos |
+| Educación | realizar-inversiones-periodicas | 629 | Redirige a la portada (URL obsoleta) |
+
+### Reglas de alcance
+| Regla | Evidencia |
+|---|---|
+| Excluir simuladores (25 URLs) | Contenido interactivo; la extracción da casi solo restos del portal |
+| Excluir páginas de contacto y chat | Texto genérico idéntico en páginas distintas |
+| Excluir páginas con sufijo `-viejo` | Versiones antiguas de páginas existentes |
+| Excluir `historias-que-transforman` (100 URLs, 13 % del sitio) | Narrativa institucional; podría desplazar contenido de productos en la búsqueda. Puede incluirse en una versión futura |
+| Excluir PDFs | Prohibidos en `robots.txt` |
+
+### Redirecciones
+- **Redirecciones a la portada (`/personas`) se descartan.** Son URLs obsoletas del sitemap
+  que el sitio redirige a la portada con estado 200 (*soft 404*).
+- **Redirecciones a otras páginas del sitio se conservan.** La página se movió, pero su
+  contenido es válido.
+- **Se permite `valores.bancolombia.com`** solo para seguir redirecciones, porque los
+  productos de inversión del banco (CDT, bonos, fondos) se publican allí. Su `robots.txt`
+  permite el acceso. No se rastrea su sitemap completo: el alcance lo define el sitemap
+  de Bancolombia.
+- **Se eliminan los parámetros `utm_*`** de las URLs, para que una misma página no se
+  guarde con direcciones distintas.
+
+### Extracción y limpieza
+- **trafilatura en modo por defecto.** `favor_recall=True` produjo exactamente la misma
+  cantidad de texto en todas las páginas medidas.
+- **Limpieza posterior en dos niveles.** (1) Eliminación de restos conocidos del portal:
+  `{}`, `${...}`, `Web Content Viewer`, `Display portlet menu`, `Component Action Menu`,
+  `Deferred Modules`, nombres de componentes (`BannerCentroAyuda`, `BuscadorFAQS`) y
+  textos de íconos (`*arrow-right*`). (2) Eliminación de bloques que se repiten en un
+  alto porcentaje de páginas, porque son plantilla y no contenido.
+- **Deduplicación por hash del texto limpio.** Páginas distintas pueden producir el
+  mismo texto.
+- **Separación crudo / limpio.** El spider guarda el HTML crudo; la limpieza es una etapa
+  independiente que se puede re-ejecutar sin volver a descargar el sitio. Esto es
+  necesario porque la eliminación de bloques repetidos requiere el corpus completo.
+
+### Cortesía con el servidor
+User-Agent identificable con enlace al repositorio, 1,5 s entre peticiones y baja
+concurrencia. Tiempo estimado del rastreo completo: unos 20 minutos.
+
+### Pendiente
+- Validar la calidad de las preguntas frecuentes individuales del centro de ayuda
+  (las páginas medidas eran índices).

@@ -19,3 +19,10 @@ def test_invalid_log_level_raises(monkeypatch):
     monkeypatch.setenv("LOG_LEVEL", "hola")
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+def test_overlap_must_be_smaller_than_chunk_size(monkeypatch):
+    monkeypatch.setenv("CHUNK_SIZE", "100")
+    monkeypatch.setenv("CHUNK_OVERLAP", "200")
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)

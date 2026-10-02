@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -45,6 +45,17 @@ class Settings(BaseSettings):
     # --- Cleaning ---
     clean_boilerplate_min_doc_freq: float = Field(default=0.10, gt=0.0, le=1.0)
     clean_min_chars: int = Field(default=200, ge=0)
+
+    # --- Chunking ---
+    chunk_size: int = Field(default=1000, gt=0)
+    chunk_overlap: int = Field(default=150, ge=0)
+
+
+    @model_validator(mode="after")
+    def _validate_chunking(self) -> "Settings":
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
+        return self
 
 
 @lru_cache

@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     scrape_max_pages: int = Field(default=0, ge=0)  # 0 = no limit
     scrape_http_cache: bool = True
 
+    # --- Cleaning ---
+    clean_boilerplate_min_doc_freq: float = Field(default=0.10, gt=0.0, le=1.0)
+    clean_min_chars: int = Field(default=200, ge=0)
+
 
 @lru_cache
 def get_settings() -> Settings:

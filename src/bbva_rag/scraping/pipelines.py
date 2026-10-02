@@ -1,8 +1,6 @@
 """Guarda el código HTML sin procesar de cada página en el disco 
-    y regístralo en un manifiesto JSONL."""
-
-
-"""Item pipelines: persistence of scraped pages."""
+y regístralo en un manifiesto JSONL
+"""
 
 import hashlib
 import json
@@ -11,7 +9,6 @@ from bbva_rag.config import get_settings
 
 
 class RawHtmlPipeline:
-
     def open_spider(self, spider):
         self.raw_dir = get_settings().data_dir / "raw"
         self.html_dir = self.raw_dir / "html"

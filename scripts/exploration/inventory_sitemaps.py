@@ -1,4 +1,3 @@
-
 import time
 from collections import Counter
 from pathlib import Path
@@ -10,13 +9,20 @@ from protego import Protego
 
 BASE = "https://www.bancolombia.com"
 
-UA = ( "Mozilla/5.0 (compatible; bbva-rag-assistant/0.1; +https://github.com/SergioANJ/bbva-rag-assistant)" )
+UA = "Mozilla/5.0 (compatible; bbva-rag-assistant/0.1; +https://github.com/SergioANJ/bbva-rag-assistant)"
 
 NOISE_PATTERNS = [
-    "simulador", "llamanos", "chatea", "-viejo", "-old",
-    "formulario", "prueba", "test",
+    "simulador",
+    "llamanos",
+    "chatea",
+    "-viejo",
+    "-old",
+    "formulario",
+    "prueba",
+    "test",
 ]
 OUTPUT = Path(__file__).parent / "urls.txt"
+
 
 def get_locs(client: httpx.Client, url: str) -> list[str]:
     """Download a sitemap and return every <loc> value."""
@@ -54,9 +60,7 @@ def main() -> None:
         print(f"  {pattern:12} {len(hits):>4}   ej: {example}")
 
     print("\nURLs por sección (primeros 3 niveles de la ruta):")
-    sections = Counter(
-        "/".join(urlparse(u).path.strip("/").split("/")[:3]) for u in unique
-    )
+    sections = Counter("/".join(urlparse(u).path.strip("/").split("/")[:3]) for u in unique)
     for section, count in sections.most_common(25):
         print(f"  {count:>4}  {section}")
 

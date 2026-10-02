@@ -26,18 +26,16 @@ SAMPLE = {
         f"{P}/fondos-inversion-colectiva/chatea-con-nosotros",
     ],
     "ayuda": [
-       "https://www.bancolombia.com/centro-de-ayuda",
-       "https://www.bancolombia.com/centro-de-ayuda/canales/app-inversiones"
-
+        "https://www.bancolombia.com/centro-de-ayuda",
+        "https://www.bancolombia.com/centro-de-ayuda/canales/app-inversiones",
     ],
     "historia": [
         "https://www.bancolombia.com/acerca-de/informacion-corporativa/historias-que-transforman/origenes/agroindustria/agrollanos"
     ],
-    
     "educacion": [
         "https://www.bancolombia.com/personas/aprender-es-facil/como-manejar-dinero/invertir/realizar-inversiones-periodicas",
         "https://www.bancolombia.com/centro-de-ayuda",
-        "https://www.bancolombia.com/centro-de-ayuda/canales/corresponsal-bancari"
+        "https://www.bancolombia.com/centro-de-ayuda/canales/corresponsal-bancari",
     ],
 }
 
@@ -49,15 +47,27 @@ def main() -> None:
                 time.sleep(1.5)
                 response = client.get(url)
                 final_url = str(response.url)
-                redirect = "" if final_url.rstrip("/") == url.rstrip("/") else f"  -> REDIRIGE A {final_url}"
+                redirect = (
+                    ""
+                    if final_url.rstrip("/") == url.rstrip("/")
+                    else f"  -> REDIRIGE A {final_url}"
+                )
 
-                precise = trafilatura.extract(
-                    response.text, output_format="markdown", include_tables=True
-                ) or ""
-                recall = trafilatura.extract(
-                    response.text, output_format="markdown", include_tables=True,
-                    favor_recall=True,
-                ) or ""
+                precise = (
+                    trafilatura.extract(
+                        response.text, output_format="markdown", include_tables=True
+                    )
+                    or ""
+                )
+                recall = (
+                    trafilatura.extract(
+                        response.text,
+                        output_format="markdown",
+                        include_tables=True,
+                        favor_recall=True,
+                    )
+                    or ""
+                )
 
                 name = url.rstrip("/").rsplit("/", 1)[-1]
                 print(

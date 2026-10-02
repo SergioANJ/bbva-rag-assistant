@@ -1,6 +1,6 @@
 """Un rastreador web que explora las páginas públicas de Bancolombia
- que aparecen en su mapa del sitio
- """
+que aparecen en su mapa del sitio
+"""
 
 from datetime import UTC, datetime
 

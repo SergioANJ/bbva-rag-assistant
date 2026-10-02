@@ -195,3 +195,21 @@ concurrencia. Tiempo estimado del rastreo completo: unos 20 minutos.
 ### Pendiente
 - Validar la calidad de las preguntas frecuentes individuales del centro de ayuda
   (las páginas medidas eran índices).
+
+
+  ### Resultados de la corrida completa (2026-10-02)
+| Concepto | Cantidad |
+|---|---|
+| URLs únicas en el sitemap | 756 |
+| Excluidas por patrón (sin descargarse) | 133 |
+| Prohibidas por `robots.txt` (incluye redirecciones a rutas prohibidas) | 23 |
+| *Soft 404* descartados | 2 |
+| Redirecciones a dominios fuera del alcance | 11 (6 dominios) |
+| Redirecciones a páginas ya descargadas (deduplicadas) | 121 |
+| **Páginas guardadas** | **467** |
+
+- Duración: 19,5 minutos (~24 páginas/minuto).
+- Volumen: 20 MB transferidos (89 MB de HTML descomprimido).
+- 190 respuestas fueron redirecciones 301: una de cada cuatro URLs del sitemap apunta
+  a una dirección antigua.
+- Se rastreó `valores.bancolombia.com` tras leer su propio `robots.txt`.

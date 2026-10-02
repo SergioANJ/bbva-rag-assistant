@@ -20,6 +20,9 @@ for base in SITES:
     try:
         page = httpx.get(base, headers=HEADERS, follow_redirects=True, timeout=15)
         robots = httpx.get(f"{base}/robots.txt", headers=HEADERS, timeout=15)
-        print(f"{base:40} page={page.status_code} size={len(page.text):>7} robots={robots.status_code}")
+        print(
+            f"{base:40} page={page.status_code}"
+            f"size={len(page.text):>7} robots={robots.status_code}"
+        )
     except httpx.HTTPError as exc:
         print(f"{base:40} ERROR {type(exc).__name__}")

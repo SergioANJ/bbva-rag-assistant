@@ -213,3 +213,58 @@ concurrencia. Tiempo estimado del rastreo completo: unos 20 minutos.
 - 190 respuestas fueron redirecciones 301: una de cada cuatro URLs del sitemap apunta
   a una dirección antigua.
 - Se rastreó `valores.bancolombia.com` tras leer su propio `robots.txt`.
+
+
+## ADR-006: Limpieza del corpus
+
+- **Fecha:** 2026-10-02
+- **Estado:** Aceptada.
+
+### Proceso
+La limpieza es una etapa independiente del scraping (`python -m bbva_rag.cleaning.run`).
+Lee el HTML crudo de `data/raw/` y produce `data/clean/pages.jsonl` y
+`data/clean/cleaning_report.json`. Se puede re-ejecutar sin volver a descargar el sitio.
+
+1. **Por página:** extracción con trafilatura, eliminación de restos del portal (nombres de
+   componentes, marcadores `${...}`, íconos, títulos vacíos y textos de relleno de páginas
+   dinámicas), normalización de espacios. El título se toma del `<h1>` y, si no existe o es
+   un marcador, del `<title>`.
+2. **Entre páginas:** se eliminan los bloques (no títulos) que aparecen en el 10 % o más de
+   las páginas.
+3. **Filtro de longitud:** se descartan las páginas con menos de 200 caracteres limpios.
+4. **Deduplicación:** se conserva una página por texto idéntico (la URL más corta) y las
+   demás URLs se registran en `duplicate_urls`.
+
+### Evidencia (inspección del corpus)
+| Decisión | Evidencia |
+|---|---|
+| Mantener trafilatura | Un extractor de todo el texto visible no aportó contenido nuevo y agregó ruido (nombres de íconos) |
+| Umbral de plantilla en 10 % | La plantilla de contacto aparece en el 16 % de las páginas; contenido legítimo de tarjetas aparece en el 5,6 % |
+| Nunca eliminar títulos por frecuencia | `## Características` (14,6 %) y `## Beneficios` (11,8 %) son secciones legítimas |
+| No eliminar títulos sin texto debajo | trafilatura representa los títulos de tarjetas como títulos consecutivos (página de Tabot); esa regla borraría contenido real |
+| Mínimo de 200 caracteres | Debajo: páginas vacías, de redirección a la app y de relleno; arriba: contenido válido corto (IKE Plus: 256, arrendamiento de vehículo: 236) |
+| Hipótesis descartada | Las páginas Visa, Mastercard y American Express tienen el mismo texto porque cada una muestra el catálogo completo; no hubo pérdida de contenido |
+
+### Resultados
+| Concepto | Cantidad |
+|---|---|
+| Páginas de entrada | 467 |
+| Bloques de plantilla eliminados | 2 |
+| Páginas descartadas por cortas | 30 |
+| Duplicados fusionados | 21 |
+| **Páginas limpias** | **416** |
+
+### Limitaciones conocidas
+- **Preguntas frecuentes del centro de ayuda:** las preguntas y respuestas se cargan con
+  JavaScript (verificado desactivando JavaScript: aparecen marcadores de carga). Las rutas
+  desde donde un sitio de este tipo carga esos datos (`/rest/`,
+  `/centro-de-ayuda/preguntas-frecuentes/resultados/`) están prohibidas en `robots.txt`,
+  por lo que no se obtuvieron, ni siquiera con un navegador automatizado.
+- **Artículos de seguridad bancaria** (fleteo, paquete chileno, suplantación de
+  funcionarios, etc.): su contenido propio se carga con JavaScript. En el HTML solo está la
+  plantilla común, por lo que se fusionan en una sola página.
+- Pueden quedar títulos de plantilla sin texto debajo (por ejemplo, "Preguntas relacionadas").
+- La regla de nombres de componentes eliminaría una línea que fuera solo una palabra
+  compuesta con mayúsculas internas (por ejemplo, un nombre de marca aislado).
+- **Mejora futura:** integración oficial con la fuente de datos de las preguntas
+  frecuentes, que son el contenido de mayor valor para un asistente.

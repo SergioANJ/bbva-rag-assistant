@@ -1,5 +1,6 @@
 """Un rastreador web que explora las páginas públicas de Bancolombia que aparecen en su mapa del sitio."""
 
+from datetime import UTC, datetime
 from scrapy.spiders import SitemapSpider
 
 class BancolombiaSpider(SitemapSpider):
@@ -16,12 +17,18 @@ class BancolombiaSpider(SitemapSpider):
         "DOWNLOAD_DELAY": 1.5, #se espera 1.5 sg, entre peticiones
         "CONCURRENT_REQUESTS_PER_DOMAIN": 1, #1 sola petición por dominio
         "CLOSESPIDER_ITEMCOUNT": 5,
+        "ITEM_PIPELINES": {
+            "bbva_rag.scraping.pipelines.RawHtmlPipeline": 300,
+        }
     }
 
     def parse(self, response):
+        redirect_urls = response.meta.get("redirect_urls", [])
         yield {
             "url": response.url,
+            "requested_url": redirect_urls[0] if redirect_urls else response.url,
             "status": response.status,
             "title": response.css("title::text").get(default="").strip(),
-            "html_size": len(response.text),
+            "fetched_at": datetime.now(UTC).isoformat(),
+            "html": response.text,
         }

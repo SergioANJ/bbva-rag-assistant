@@ -1,4 +1,4 @@
-"""Guarda el código HTML sin procesar de cada página en el disco 
+"""Guarda el código HTML sin procesar de cada página en el disco
 y regístralo en un manifiesto JSONL
 """
 

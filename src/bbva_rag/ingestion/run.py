@@ -20,7 +20,9 @@ def main() -> None:
         pages = [json.loads(line) for line in f]
 
     splitter = build_splitter(settings.chunk_size, settings.chunk_overlap)
-    chunks = [chunk for page in pages for chunk in chunk_page(page, splitter)]
+    chunks = [
+        chunk for page in pages for chunk in chunk_page(page, splitter, settings.chunk_min_chars)
+    ]
 
     with (chunks_dir / "chunks.jsonl").open("w", encoding="utf-8") as out:
         for chunk in chunks:

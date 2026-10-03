@@ -47,14 +47,16 @@ class Settings(BaseSettings):
     clean_min_chars: int = Field(default=200, ge=0)
 
     # --- Chunking ---
+    chunk_min_chars: int = Field(default=100, ge=0)
     chunk_size: int = Field(default=1000, gt=0)
     chunk_overlap: int = Field(default=150, ge=0)
-
 
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
+        if self.chunk_min_chars >= self.chunk_size:
+            raise ValueError("CHUNK_MIN_CHARS must be smaller than CHUNK_SIZE")
         return self
 
 

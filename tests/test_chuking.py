@@ -1,4 +1,10 @@
-from bbva_rag.ingestion.chunking import build_splitter, chunk_page, context_header
+from bbva_rag.ingestion.chunking import (
+    build_splitter,
+    chunk_page,
+    context_header,
+    merge_small_pieces,
+    repeat_table_headers,
+)
 
 
 def make_page(text: str) -> dict:
@@ -42,3 +48,32 @@ def test_chunk_ids_are_stable_and_unique():
     second = [c["chunk_id"] for c in chunk_page(page, build_splitter(500, 50))]
     assert first == second
     assert len(set(first)) == len(first)
+
+
+def test_small_heading_is_attached_to_the_next_piece():
+    pieces = ["#### Pasos", "1. Abre la app. " * 20]
+    merged = merge_small_pieces(pieces, min_chars=100)
+    assert len(merged) == 1
+    assert merged[0].startswith("#### Pasos")
+
+
+def test_small_last_piece_is_attached_to_the_previous_one():
+    pieces = ["Contenido largo. " * 20, "Fin"]
+    merged = merge_small_pieces(pieces, min_chars=100)
+    assert len(merged) == 1
+    assert merged[0].endswith("Fin")
+
+
+def test_table_continuation_gets_its_header():
+    pieces = ["Tarifas\n\n| Tarifa | Valor |\n| Retiro | $ 100 |", "| Consulta | $ 50 |"]
+    result = repeat_table_headers(pieces)
+    assert result[1] == "| Tarifa | Valor |\n| Consulta | $ 50 |"
+
+
+def test_new_table_does_not_inherit_previous_header():
+    pieces = [
+        "| Tarifa | Valor |\n| Retiro | $ 100 |\n\nOtro texto",
+        "| Plan | Precio |\n| Oro | $ 9 |",
+    ]
+    result = repeat_table_headers(pieces)
+    assert result[1] == pieces[1]

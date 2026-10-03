@@ -268,3 +268,44 @@ Lee el HTML crudo de `data/raw/` y produce `data/clean/pages.jsonl` y
   compuesta con mayúsculas internas (por ejemplo, un nombre de marca aislado).
 - **Mejora futura:** integración oficial con la fuente de datos de las preguntas
   frecuentes, que son el contenido de mayor valor para un asistente.
+
+
+  ## ADR-007: Estrategia de fragmentación (chunking)
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Decisión
+- `RecursiveCharacterTextSplitter` de LangChain en modo Markdown: corta preferentemente en
+  títulos, luego en párrafos, luego en líneas, y agrupa trozos pequeños consecutivos.
+- Tamaño de 1.000 caracteres con 150 de superposición (configurables en `.env`). Con la
+  mediana de página en ~1.500 caracteres, una página típica queda en 2 fragmentos, y 5
+  fragmentos suman ~1.500 tokens de contexto para el LLM.
+- Cada fragmento empieza con una línea de contexto (`Fuente: <título> (<sección>)`), para
+  que un fragmento del medio de una página no pierda a qué producto se refiere.
+- IDs deterministas (UUID v5 a partir de URL y posición): al reindexar, los fragmentos se
+  reemplazan en lugar de duplicarse.
+
+### Correcciones basadas en la inspección
+| Problema observado | Corrección |
+|---|---|
+| 65 fragmentos de menos de 100 caracteres, casi todos títulos separados de su contenido (`#### Pasos`, `## Coberturas`) | Los trozos menores a 100 caracteres se unen al siguiente; si son el último, al anterior |
+| Tablas del tarifario cortadas: fragmentos con filas de montos sin los encabezados de las columnas | Si un fragmento continúa una tabla abierta, se le antepone la fila de encabezados; una tabla nueva no hereda encabezados ajenos |
+| Espacios repetidos dentro de las celdas de las tablas | Se colapsan durante la limpieza |
+
+### Resultados
+| Concepto | Antes | Después |
+|---|---|---|
+| Fragmentos | 1.687 | 1.625 |
+| Menores a 100 caracteres | 65 | 0 |
+| Tamaño mínimo / mediano / máximo | 10 / 808 / 1.000 | 102 / 822 / 1.260 |
+
+El máximo supera el límite configurado por la unión de títulos y la repetición de
+encabezados; se acepta a cambio de fragmentos autocontenidos.
+
+### Limitaciones y mejoras futuras
+- Las tablas anchas (por ejemplo, el tarifario con 8 columnas e historial de
+  modificaciones) siguen siendo difíciles para la búsqueda semántica. Mejora futura:
+  convertir cada fila en una frase del tipo "Tarifa: X; Plan Oro: $ Y".
+- El glosario aporta 145 fragmentos (~9 % del corpus); es contenido legítimo, pero puede
+  dominar las búsquedas de definiciones.

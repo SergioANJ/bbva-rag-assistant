@@ -345,3 +345,47 @@ pregunta en el grafo y la comparación con `text-embedding-3-large` en la evalua
 - Alternativas consideradas: pgvector (un servicio menos, pero la búsqueda híbrida habría
   que construirla a mano), Weaviate (válida), Chroma (orientada a prototipos), FAISS
   (librería, no base de datos), Pinecone (no es self-hosted).
+
+  ## ADR-009: Indexación híbrida y primeras pruebas de búsqueda
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Indexación
+- Colección `bancolombia_chunks` en Qdrant con dos vectores por punto: `dense`
+  (OpenAI, 1.536 dimensiones, distancia coseno) y `bm25` (FastEmbed, español, con IDF
+  calculado por Qdrant sobre toda la colección).
+- BM25 en español: elimina palabras vacías y reduce las palabras a su raíz (verificado con
+  tests: "tarjeta" y "tarjetas" producen el mismo índice).
+- Reconstrucción completa de la colección en cada indexación: con 1.625 fragmentos es
+  rápida y barata, y evita que queden fragmentos de páginas que ya no existen. La
+  indexación incremental queda como mejora futura.
+- Índice de payload sobre `section` para filtros futuros.
+
+| Etapa | Resultado |
+|---|---|
+| Fragmentos indexados | 1.625 |
+| Tokens enviados a OpenAI | ~324 mil (~0,7 centavos de dólar) |
+| Vectores densos | 19,8 s |
+| Vectores BM25 | 2,0 s (local, sin PyTorch) |
+
+### Primeras pruebas de búsqueda (top 3, `scripts/exploration/try_search.py`)
+| Pregunta | Semántica | BM25 | Híbrida (RRF) |
+|---|---|---|---|
+| "¿Cómo abro un CDT?" | Glosario e inscripción de cuentas | Páginas "¿Cómo abro...?" de otros productos | Combinación de ambas; ninguna sobre CDT |
+| "¿Cuánto me cobran por tener la tarjeta de crédito?" | Páginas generales de tarjetas | Costo de un avance ("cobran") | Páginas relacionadas, sin la cuota de manejo |
+
+### Hallazgos
+- Las palabras de la forma de la pregunta ("cómo", "abro", "cobran") dominan la búsqueda
+  BM25 cuando coinciden con títulos de otras páginas.
+- El contenido sobre cuota de manejo existe en el corpus (22 páginas de tarjetas), pero
+  no llega al top 3.
+- Fragmentos con "CDT" en el corpus: <completar>. [Si son pocos: el problema es de
+  cobertura, porque el contenido de CDT vive en Valores con poco texto.]
+- La misma página puede ocupar varias posiciones del top.
+
+### Consecuencias para la Fase 4
+- Reformular la pregunta antes de buscar (expandir siglas, usar términos del sitio).
+- Reranker sobre los 20 candidatos de la búsqueda híbrida.
+- Medir primero si el fragmento correcto aparece entre los 20 candidatos: si no aparece,
+  el reranker no puede rescatarlo.

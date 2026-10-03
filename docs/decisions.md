@@ -309,3 +309,39 @@ encabezados; se acepta a cambio de fragmentos autocontenidos.
   convertir cada fila en una frase del tipo "Tarifa: X; Plan Oro: $ Y".
 - El glosario aporta 145 fragmentos (~9 % del corpus); es contenido legítimo, pero puede
   dominar las búsquedas de definiciones.
+
+
+  ## ADR-008: Embeddings con OpenAI y base vectorial Qdrant
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada. Reemplaza el plan inicial de embeddings locales (`bge-m3`).
+
+### Embeddings densos: OpenAI `text-embedding-3-small`
+- **Docker:** un modelo local requiere PyTorch y más de 2 GB de modelo, lo que haría
+  pesada y lenta de construir la imagen que el evaluador debe levantar.
+- **Costo:** $0,02 por millón de tokens. El corpus (~1,4 M de caracteres, ~400 mil tokens)
+  cuesta menos de un centavo de dólar por indexación completa.
+- **Sin dependencia nueva:** el LLM ya requiere la API de OpenAI.
+- **Desventaja aceptada:** es un segundo componente pago. Se mitiga manteniendo locales y
+  gratuitos BM25 y el reranker.
+- **Patrón Factory:** el proveedor está detrás de la interfaz `Embedder`; agregar un modelo
+  local solo requiere una nueva implementación y un caso en `create_embedder`.
+
+### Hallazgo de la prueba de similitud
+| Par de frases | Similitud |
+|---|---|
+| "¿Cuánto me cobran por tener la tarjeta de crédito?" / "Cuota de manejo de la tarjeta de crédito" | 0,69 |
+| "Cómo abrir un CDT por la app" / "Invertir a término fijo con certificado de depósito" | 0,26 |
+| "Cómo abrir un CDT por la app" / "Horario de atención de las oficinas" | 0,23 |
+
+El modelo captura paráfrasis, pero no relaciona la sigla "CDT" con su significado. Esto
+justifica la búsqueda híbrida (BM25 para coincidencias exactas), la reformulación de la
+pregunta en el grafo y la comparación con `text-embedding-3-large` en la evaluación.
+
+### Base vectorial: Qdrant (self-hosted en Docker)
+- Búsqueda híbrida nativa: vector denso y vector disperso en el mismo punto, combinados
+  en una sola consulta.
+- Filtros por metadatos (`section`), panel web para inspección y versión fija de la imagen.
+- Alternativas consideradas: pgvector (un servicio menos, pero la búsqueda híbrida habría
+  que construirla a mano), Weaviate (válida), Chroma (orientada a prototipos), FAISS
+  (librería, no base de datos), Pinecone (no es self-hosted).

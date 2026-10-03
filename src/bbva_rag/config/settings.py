@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -50,6 +50,19 @@ class Settings(BaseSettings):
     chunk_min_chars: int = Field(default=100, ge=0)
     chunk_size: int = Field(default=1000, gt=0)
     chunk_overlap: int = Field(default=150, ge=0)
+
+    # --- OpenAI ---
+    openai_api_key: SecretStr | None = None
+
+    # --- Embeddings ---
+    embedding_provider: Literal["openai"] = "openai" #se pueden agregare + models
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimensions: int = Field(default=1536, gt=0)
+    embedding_batch_size: int = Field(default=100, gt=0, le=2048)
+
+    # --- Vector store (Qdrant) ---
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_collection: str = "bancolombia_chunks"
 
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":

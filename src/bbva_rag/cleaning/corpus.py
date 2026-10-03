@@ -1,5 +1,5 @@
 """Limpieza a nivel de corpus: bloques de texto repetitivos
- compartidos por muchas páginas y textos duplicados."""
+compartidos por muchas páginas y textos duplicados."""
 
 import re
 from collections import Counter

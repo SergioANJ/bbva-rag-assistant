@@ -268,3 +268,124 @@ Lee el HTML crudo de `data/raw/` y produce `data/clean/pages.jsonl` y
   compuesta con mayúsculas internas (por ejemplo, un nombre de marca aislado).
 - **Mejora futura:** integración oficial con la fuente de datos de las preguntas
   frecuentes, que son el contenido de mayor valor para un asistente.
+
+
+  ## ADR-007: Estrategia de fragmentación (chunking)
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Decisión
+- `RecursiveCharacterTextSplitter` de LangChain en modo Markdown: corta preferentemente en
+  títulos, luego en párrafos, luego en líneas, y agrupa trozos pequeños consecutivos.
+- Tamaño de 1.000 caracteres con 150 de superposición (configurables en `.env`). Con la
+  mediana de página en ~1.500 caracteres, una página típica queda en 2 fragmentos, y 5
+  fragmentos suman ~1.500 tokens de contexto para el LLM.
+- Cada fragmento empieza con una línea de contexto (`Fuente: <título> (<sección>)`), para
+  que un fragmento del medio de una página no pierda a qué producto se refiere.
+- IDs deterministas (UUID v5 a partir de URL y posición): al reindexar, los fragmentos se
+  reemplazan en lugar de duplicarse.
+
+### Correcciones basadas en la inspección
+| Problema observado | Corrección |
+|---|---|
+| 65 fragmentos de menos de 100 caracteres, casi todos títulos separados de su contenido (`#### Pasos`, `## Coberturas`) | Los trozos menores a 100 caracteres se unen al siguiente; si son el último, al anterior |
+| Tablas del tarifario cortadas: fragmentos con filas de montos sin los encabezados de las columnas | Si un fragmento continúa una tabla abierta, se le antepone la fila de encabezados; una tabla nueva no hereda encabezados ajenos |
+| Espacios repetidos dentro de las celdas de las tablas | Se colapsan durante la limpieza |
+
+### Resultados
+| Concepto | Antes | Después |
+|---|---|---|
+| Fragmentos | 1.687 | 1.625 |
+| Menores a 100 caracteres | 65 | 0 |
+| Tamaño mínimo / mediano / máximo | 10 / 808 / 1.000 | 102 / 822 / 1.260 |
+
+El máximo supera el límite configurado por la unión de títulos y la repetición de
+encabezados; se acepta a cambio de fragmentos autocontenidos.
+
+### Limitaciones y mejoras futuras
+- Las tablas anchas (por ejemplo, el tarifario con 8 columnas e historial de
+  modificaciones) siguen siendo difíciles para la búsqueda semántica. Mejora futura:
+  convertir cada fila en una frase del tipo "Tarifa: X; Plan Oro: $ Y".
+- El glosario aporta 145 fragmentos (~9 % del corpus); es contenido legítimo, pero puede
+  dominar las búsquedas de definiciones.
+
+
+  ## ADR-008: Embeddings con OpenAI y base vectorial Qdrant
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada. Reemplaza el plan inicial de embeddings locales (`bge-m3`).
+
+### Embeddings densos: OpenAI `text-embedding-3-small`
+- **Docker:** un modelo local requiere PyTorch y más de 2 GB de modelo, lo que haría
+  pesada y lenta de construir la imagen que el evaluador debe levantar.
+- **Costo:** $0,02 por millón de tokens. El corpus (~1,4 M de caracteres, ~400 mil tokens)
+  cuesta menos de un centavo de dólar por indexación completa.
+- **Sin dependencia nueva:** el LLM ya requiere la API de OpenAI.
+- **Desventaja aceptada:** es un segundo componente pago. Se mitiga manteniendo locales y
+  gratuitos BM25 y el reranker.
+- **Patrón Factory:** el proveedor está detrás de la interfaz `Embedder`; agregar un modelo
+  local solo requiere una nueva implementación y un caso en `create_embedder`.
+
+### Hallazgo de la prueba de similitud
+| Par de frases | Similitud |
+|---|---|
+| "¿Cuánto me cobran por tener la tarjeta de crédito?" / "Cuota de manejo de la tarjeta de crédito" | 0,69 |
+| "Cómo abrir un CDT por la app" / "Invertir a término fijo con certificado de depósito" | 0,26 |
+| "Cómo abrir un CDT por la app" / "Horario de atención de las oficinas" | 0,23 |
+
+El modelo captura paráfrasis, pero no relaciona la sigla "CDT" con su significado. Esto
+justifica la búsqueda híbrida (BM25 para coincidencias exactas), la reformulación de la
+pregunta en el grafo y la comparación con `text-embedding-3-large` en la evaluación.
+
+### Base vectorial: Qdrant (self-hosted en Docker)
+- Búsqueda híbrida nativa: vector denso y vector disperso en el mismo punto, combinados
+  en una sola consulta.
+- Filtros por metadatos (`section`), panel web para inspección y versión fija de la imagen.
+- Alternativas consideradas: pgvector (un servicio menos, pero la búsqueda híbrida habría
+  que construirla a mano), Weaviate (válida), Chroma (orientada a prototipos), FAISS
+  (librería, no base de datos), Pinecone (no es self-hosted).
+
+  ## ADR-009: Indexación híbrida y primeras pruebas de búsqueda
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Indexación
+- Colección `bancolombia_chunks` en Qdrant con dos vectores por punto: `dense`
+  (OpenAI, 1.536 dimensiones, distancia coseno) y `bm25` (FastEmbed, español, con IDF
+  calculado por Qdrant sobre toda la colección).
+- BM25 en español: elimina palabras vacías y reduce las palabras a su raíz (verificado con
+  tests: "tarjeta" y "tarjetas" producen el mismo índice).
+- Reconstrucción completa de la colección en cada indexación: con 1.625 fragmentos es
+  rápida y barata, y evita que queden fragmentos de páginas que ya no existen. La
+  indexación incremental queda como mejora futura.
+- Índice de payload sobre `section` para filtros futuros.
+
+| Etapa | Resultado |
+|---|---|
+| Fragmentos indexados | 1.625 |
+| Tokens enviados a OpenAI | ~324 mil (~0,7 centavos de dólar) |
+| Vectores densos | 19,8 s |
+| Vectores BM25 | 2,0 s (local, sin PyTorch) |
+
+### Primeras pruebas de búsqueda (top 3, `scripts/exploration/try_search.py`)
+| Pregunta | Semántica | BM25 | Híbrida (RRF) |
+|---|---|---|---|
+| "¿Cómo abro un CDT?" | Glosario e inscripción de cuentas | Páginas "¿Cómo abro...?" de otros productos | Combinación de ambas; ninguna sobre CDT |
+| "¿Cuánto me cobran por tener la tarjeta de crédito?" | Páginas generales de tarjetas | Costo de un avance ("cobran") | Páginas relacionadas, sin la cuota de manejo |
+
+### Hallazgos
+- Las palabras de la forma de la pregunta ("cómo", "abro", "cobran") dominan la búsqueda
+  BM25 cuando coinciden con títulos de otras páginas.
+- El contenido sobre cuota de manejo existe en el corpus (22 páginas de tarjetas), pero
+  no llega al top 3.
+- Fragmentos con "CDT" en el corpus: <completar>. [Si son pocos: el problema es de
+  cobertura, porque el contenido de CDT vive en Valores con poco texto.]
+- La misma página puede ocupar varias posiciones del top.
+
+### Consecuencias para la Fase 4
+- Reformular la pregunta antes de buscar (expandir siglas, usar términos del sitio).
+- Reranker sobre los 20 candidatos de la búsqueda híbrida.
+- Medir primero si el fragmento correcto aparece entre los 20 candidatos: si no aparece,
+  el reranker no puede rescatarlo.

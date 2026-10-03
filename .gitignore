@@ -25,3 +25,6 @@ data/raw/
 
 # Scrapy HTTP cache
 .scrapy/
+
+# chunking
+data/chunks/

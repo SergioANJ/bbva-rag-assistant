@@ -1,5 +1,5 @@
 """comprueba si una frase vista en el navegador existe en el código HTML
- sin procesar de una página"""
+sin procesar de una página"""
 
 import json
 import sys

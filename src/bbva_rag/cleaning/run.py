@@ -1,5 +1,5 @@
 """Etapa de limpieza: HTML sin procesar -> páginas Markdown
- limpias en data/clean/pages.jsonl"""
+limpias en data/clean/pages.jsonl"""
 
 import hashlib
 import json
@@ -14,7 +14,7 @@ from bbva_rag.config import get_settings, setup_logging
 
 
 def section_from_url(url: str) -> str:
-    """Sección principal del sitio, utilizada posteriormente 
+    """Sección principal del sitio, utilizada posteriormente
     como metadatos para filtrado y análisis"""
     parts = urlsplit(url)
     if parts.netloc.startswith("valores."):
@@ -24,7 +24,7 @@ def section_from_url(url: str) -> str:
 
 def load_pages(raw_dir) -> list[dict]:
     """Limpieza página por página de todo el código HTML sin
-      procesar que aparece en el manifiesto"""
+    procesar que aparece en el manifiesto"""
     with (raw_dir / "manifest.jsonl").open(encoding="utf-8") as manifest:
         records = [json.loads(line) for line in manifest]
     pages, seen_files = [], set()

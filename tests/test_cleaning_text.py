@@ -18,7 +18,7 @@ def test_keeps_real_headings():
 
 def test_normalize_whitespace():
     assert normalize_whitespace("  Hola\xa0mundo  \n\n\n\n  Chao ") == "Hola mundo\n\nChao"
-
+    assert normalize_whitespace("Plan Cero      (sin IVA)") == "Plan Cero (sin IVA)"
 
 def test_title_prefers_h1_and_skips_placeholders():
     html = "<html><head><title>Genérico</title></head><body><h1>${title}</h1></body></html>"

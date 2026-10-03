@@ -29,6 +29,7 @@ TEMPLATE_PLACEHOLDER = re.compile(r"\$\{[^}]*\}")  # ${title}, ${loading}
 ICON_TEXT = re.compile(r"\*arrow\d?-(?:left|right|up|down)\*")  # *arrow-right*, *arrow2-down*
 COMPONENT_NAME = re.compile(r"^#*\s*[A-Za-z][a-z]+(?:[A-Z][A-Za-z]*)+$")  # BannerCentroAyuda
 MULTIPLE_BLANK_LINES = re.compile(r"\n{3,}")
+REPEATED_SPACES = re.compile(r"[ \t]{2,}")
 
 
 def extract_main_text(html: str) -> str:
@@ -69,7 +70,7 @@ def normalize_whitespace(text: str) -> str:
     """SEliminar cada línea, reemplazar los espacios de no separación
     y eliminar las secuencias de líneas en blanco."""
     text = text.replace("\xa0", " ")
-    text = "\n".join(line.strip() for line in text.splitlines())
+    text = "\n".join(REPEATED_SPACES.sub(" ", line).strip() for line in text.splitlines())
     return MULTIPLE_BLANK_LINES.sub("\n\n", text).strip()
 
 

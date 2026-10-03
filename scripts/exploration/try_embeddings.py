@@ -1,6 +1,5 @@
 """Exploración: mouestra cómo las incrustaciones capturan el
-   significado (similitud del coseno entre oraciones)."""
-
+significado (similitud del coseno entre oraciones)."""
 
 from bbva_rag.config import get_settings
 from bbva_rag.embeddings.factory import create_embedder
@@ -15,7 +14,7 @@ SENTENCES = [
 
 
 def cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=False))
     norm_a = sum(x * x for x in a) ** 0.5
     norm_b = sum(y * y for y in b) ** 0.5
     return dot / (norm_a * norm_b)

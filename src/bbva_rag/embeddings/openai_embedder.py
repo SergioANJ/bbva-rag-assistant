@@ -1,6 +1,7 @@
-
 """Enviar el texto a OpenAI t recibir los vectores #"""
+
 from openai import OpenAI
+
 
 class OpenAIEmbedder:
     def __init__(
@@ -23,7 +24,7 @@ class OpenAIEmbedder:
             response = self._client.embeddings.create(
                 model=self.model, input=batch, dimensions=self.dimensions
             )
-            #Nos aseguramos que cada vector corresponda al texto enviado
+            # Nos aseguramos que cada vector corresponda al texto enviado
             ordered = sorted(response.data, key=lambda item: item.index)
             vectors.extend(item.embedding for item in ordered)
         return vectors

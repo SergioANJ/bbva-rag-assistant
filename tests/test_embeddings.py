@@ -9,7 +9,8 @@ from bbva_rag.embeddings.openai_embedder import OpenAIEmbedder
 
 class FakeEmbeddingsAPI:
     """Imita client.embeddings: devuelve [i] como el vector del texto i,
-       en orden inverso."""
+    en orden inverso."""
+
     def __init__(self):
         self.calls = 0
 

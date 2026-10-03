@@ -22,4 +22,5 @@ class BM25Encoder:
         ]
 
     def embed_query(self, text: str) -> SparseVector:
-        next(iter(self._model.query_embed(text)))
+        embedding = next(iter(self._model.query_embed(text)))
+        return SparseVector(embedding.indices.tolist(), embedding.values.tolist())

@@ -1,8 +1,9 @@
-"""Se construye el proveedor seleccionado """
+"""Se construye el proveedor seleccionado"""
 
 from bbva_rag.config import Settings
 from bbva_rag.embeddings.base import Embedder
 from bbva_rag.embeddings.openai_embedder import OpenAIEmbedder
+
 
 def create_embedder(settings: Settings) -> Embedder:
     if settings.embedding_provider == "openai":

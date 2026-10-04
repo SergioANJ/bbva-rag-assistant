@@ -1,5 +1,6 @@
-"""Exploración: ejecute el gráfico RAG para una pregunta 
-   y muestre la ruta y los tiempos"""
+"""Exploración: ejecute el gráfico RAG para una pregunta
+y muestre la ruta y los tiempos"""
+
 import sys
 
 from bbva_rag.config import get_settings

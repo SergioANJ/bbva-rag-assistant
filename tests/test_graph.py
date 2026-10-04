@@ -19,8 +19,12 @@ class StubNodes(RAGNodes):
 
     def analyze_query(self, state):
         self.path.append("analyze_query")
-        return {"intent": self.intent, "standalone_question": state["question"],
-                "answer": "¡Hola!" if self.intent != "bank_query" else "", "attempts": 0}
+        return {
+            "intent": self.intent,
+            "standalone_question": state["question"],
+            "answer": "¡Hola!" if self.intent != "bank_query" else "",
+            "attempts": 0,
+        }
 
     def retrieve(self, state):
         self.path.append("retrieve")
@@ -36,7 +40,10 @@ class StubNodes(RAGNodes):
 
     def generate(self, state):
         self.path.append("generate")
-        return {"answer": "respuesta [1]", "sources": [{"title": "CDT", "url": "https://x.com/cdt"}]}
+        return {
+            "answer": "respuesta [1]",
+            "sources": [{"title": "CDT", "url": "https://x.com/cdt"}],
+        }
 
 
 def run(nodes: StubNodes) -> dict:
@@ -61,7 +68,13 @@ def test_low_score_triggers_one_rewrite_then_generates():
     nodes = StubNodes("bank_query", scores=[0.1, 0.9])
     run(nodes)
     assert nodes.path == [
-        "analyze_query", "retrieve", "rerank", "rewrite_query", "retrieve", "rerank", "generate"
+        "analyze_query",
+        "retrieve",
+        "rerank",
+        "rewrite_query",
+        "retrieve",
+        "rerank",
+        "generate",
     ]
 
 

@@ -1,5 +1,5 @@
 """Fábrica: construye la estrategia de recuperación seleccionada
-   en la configuración"""
+en la configuración"""
 
 from bbva_rag.embeddings.base import Embedder
 from bbva_rag.embeddings.sparse_bm25 import BM25Encoder

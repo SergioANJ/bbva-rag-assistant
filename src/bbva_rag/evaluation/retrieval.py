@@ -44,6 +44,7 @@ def summarize(ranks: list[int | None], cutoffs: list[int]) -> dict:
         "mrr": mean_reciprocal_rank(ranks),
     }
 
+
 def main() -> None:
     setup_logging()
     settings = get_settings()
@@ -94,7 +95,7 @@ def main() -> None:
             reranked = reranker.rerank(item["question"], chunks, top_n=len(chunks))
             seconds.append(time.perf_counter() - started)
             ranks.append(rank_of(reranked, item))
-        results[RERANKED] = {**summarize(ranks,cutoffs), "avg_rerank_seconds": mean(seconds)}
+        results[RERANKED] = {**summarize(ranks, cutoffs), "avg_rerank_seconds": mean(seconds)}
 
     columns = list(results)
     print(f"\nPreguntas: {len(golden)}  |  candidatos por pregunta: {settings.retrieval_top_k}")

@@ -1,5 +1,5 @@
 """Exploración: encuentra páginas limpias cuyo título o texto
-   contenga una palabra clave (para construir el conjunto de referencia)."""
+contenga una palabra clave (para construir el conjunto de referencia)."""
 
 import json
 import sys

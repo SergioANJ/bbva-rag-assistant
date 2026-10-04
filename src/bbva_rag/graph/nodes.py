@@ -19,8 +19,8 @@ NO_ANSWER_MESSAGE = (
 
 
 class RAGNodes:
-    """Cada método público es un nodo del grafo: recibe el estado y 
-       devuelve solo lo que cambia"""
+    """Cada método público es un nodo del grafo: recibe el estado y
+    devuelve solo lo que cambia"""
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class RAGNodes:
         # La respuesta ya fue escrita por analyze_query
         return {"sources": []}
 
-    # ---------- Enrutamiento (es la arista condicional) ----------
+    # ---------- Enrutamiento (es la arista condicionales) ----------
 
     def route_by_intent(self, state: RAGState) -> str:
         return "retrieve" if state["intent"] == "bank_query" else "direct_reply"

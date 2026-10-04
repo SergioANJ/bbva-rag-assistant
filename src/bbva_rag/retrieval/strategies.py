@@ -1,6 +1,5 @@
 """Estrategias de recuperación (Patrón de estrategia):
-   misma interfaz, diferentes métodos de búsqueda"""
-
+misma interfaz, diferentes métodos de búsqueda"""
 
 from bbva_rag.embeddings.base import Embedder
 from bbva_rag.embeddings.sparse_bm25 import BM25Encoder

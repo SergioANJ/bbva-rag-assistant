@@ -1,5 +1,5 @@
-"""Formato de resultados e interfaz comunes para 
-   todas las estrategias de recuperación."""
+"""Formato de resultados e interfaz comunes para
+todas las estrategias de recuperación."""
 
 from dataclasses import dataclass
 from typing import Protocol

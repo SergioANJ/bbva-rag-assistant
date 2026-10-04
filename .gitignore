@@ -28,3 +28,6 @@ data/raw/
 
 # chunking
 data/chunks/
+
+# Downloaded models (FastEmbed)
+.cache/

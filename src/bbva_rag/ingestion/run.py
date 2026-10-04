@@ -52,7 +52,9 @@ def index_chunks(settings: Settings, chunks: list[dict]) -> None:
     logger.info(f"Dense vectors: {len(dense)} in {time.perf_counter() - started:.1f}s")
 
     started = time.perf_counter()
-    sparse = BM25Encoder(settings.sparse_model, settings.sparse_language).embed_documents(texts)
+    sparse = BM25Encoder(
+        settings.sparse_model, settings.sparse_language, str(settings.models_cache_dir)
+    ).embed_documents(texts)
     logger.info(f"BM25 vectors: {len(sparse)} in {time.perf_counter() - started:.1f}s")
 
     store = QdrantStore(settings.qdrant_url, settings.qdrant_collection)

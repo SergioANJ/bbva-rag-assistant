@@ -78,6 +78,13 @@ class Settings(BaseSettings):
     # --- Local model cache (FastEmbed) ---
     models_cache_dir: Path = PROJECT_ROOT / ".cache" / "models"
 
+    # --- LLM ---
+    llm_provider: Literal["openai"] = "openai"
+    llm_model: str = "gpt-4.1-mini"
+    llm_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    llm_max_tokens: int = Field(default=800, gt=0)
+    llm_timeout_seconds: float = Field(default=30.0, gt=0)
+
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:

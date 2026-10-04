@@ -1,5 +1,7 @@
 """Repositorio: el único lugar que lee o escribe el historial de conversaciones."""
 
+from datetime import datetime
+
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -78,3 +80,31 @@ class ConversationRepository:
             return True
         except Exception:
             return False
+
+    def all_messages(self, since: datetime | None = None) -> list[dict]:
+        """Cada mensaje (opcionalmente desde una fecha), el más antiguo primero,
+        con todos sus metadatos"""
+        statement = select(Message).order_by(Message.id)
+        if since is not None:
+            statement = statement.where(Message.created_at >= since)
+        with self._session_factory() as session:
+            rows = session.scalars(statement).all()
+        return [
+            {
+                "id": m.id,
+                "conversation_id": m.conversation_id,
+                "role": m.role,
+                "content": m.content,
+                "created_at": m.created_at,
+                "intent": m.intent,
+                "outcome": m.outcome,
+                "standalone_question": m.standalone_question,
+                "top_score": m.top_score,
+                "attempts": m.attempts,
+                "sources": m.sources or [],
+                "timings": m.timings or {},
+                "latency_seconds": m.latency_seconds,
+                "feedback": m.feedback,
+            }
+            for m in rows
+        ]

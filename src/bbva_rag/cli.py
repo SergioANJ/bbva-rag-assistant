@@ -1,26 +1,35 @@
-"""Conversación en la terminal con el asistente RAG (historial en memoria; la persistencia se
-   piensa implementa en la fase 5)"""
+"""Conversación en terminal con el asistente RAG e
+historial persistente en PostgreSQL"""
 
-from loguru import logger
+import argparse
+import uuid
 
 from bbva_rag.config import get_settings, setup_logging
 from bbva_rag.graph.builder import create_rag_graph
+from bbva_rag.memory.database import create_session_factory
+from bbva_rag.memory.repository import ConversationRepository
+from bbva_rag.services.chat import ChatService
 
 EXIT_COMMANDS = {"salir", "exit", "quit"}
-
-
-def recent_history(history: list[dict], max_messages: int) -> list[dict]:
-    """Last N messages. Careful: history[-0:] would return the whole list."""
-    return history[-max_messages:] if max_messages > 0 else []
+HELP = (
+    "Comandos: /nueva (otra conversación), /util o /noutil (calificar la última respuesta), salir"
+)
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Chat with the Bancolombia RAG assistant.")
+    parser.add_argument("--session", help="conversation id to resume")
+    args = parser.parse_args()
+
     setup_logging()
     settings = get_settings()
     print("Cargando el asistente...")
-    graph = create_rag_graph(settings)
-    history: list[dict] = []
-    print("Asistente de Bancolombia. Escribe tu pregunta, '/nueva' para reiniciar o 'salir'.\n")
+    repository = ConversationRepository(create_session_factory(settings.database_url))
+    chat = ChatService(create_rag_graph(settings), repository, settings.history_max_messages)
+
+    conversation_id = args.session or str(uuid.uuid4())
+    last_message_id = None
+    print(f"Conversación: {conversation_id}\n{HELP}\n")
 
     while True:
         try:
@@ -32,28 +41,25 @@ def main() -> None:
         if question.lower() in EXIT_COMMANDS:
             break
         if question == "/nueva":
-            history.clear()
-            print("(conversación reiniciada)\n")
+            conversation_id, last_message_id = str(uuid.uuid4()), None
+            print(f"(nueva conversación: {conversation_id})\n")
+            continue
+        if question in ("/util", "/noutil"):
+            if last_message_id is None:
+                print("(todavía no hay una respuesta para calificar)\n")
+            else:
+                repository.set_feedback(last_message_id, 1 if question == "/util" else -1)
+                print("(¡gracias por tu calificación!)\n")
             continue
 
-        try:
-            result = graph.invoke(
-                {"question": question, "history": recent_history(history, settings.history_max_messages)}
-            )
-        except Exception:
-            logger.exception("Error while answering")
-            print("\nAsistente: Ocurrió un error al procesar tu pregunta. Intenta de nuevo.\n")
-            continue
-
-        print(f"\nAsistente: {result['answer']}")
-        for source in result.get("sources", []):
+        reply = chat.ask(conversation_id, question)
+        last_message_id = reply.message_id
+        print(f"\nAsistente: {reply.answer}")
+        for source in reply.sources:
             print(f"  - {source['title']}: {source['url']}")
-        print(f"  ({sum(result.get('timings', {}).values()):.1f} s)\n")
+        print(f"  ({reply.latency_seconds:.1f} s)\n")
 
-        history.append({"role": "user", "content": question})
-        history.append({"role": "assistant", "content": result["answer"]})
-
-    print("¡Hasta luego!")
+    print(f"¡Hasta luego! Para retomar: uv run python -m bbva_rag.cli --session {conversation_id}")
 
 
 if __name__ == "__main__":

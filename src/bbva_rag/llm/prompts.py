@@ -12,7 +12,9 @@ publicada en el sitio web de Bancolombia.
 Clasifica la pregunta actual:
 - bank_query: cualquier pregunta sobre productos, servicios, tarifas, canales, trámites, \
 seguridad o información institucional del banco.
-- greeting: saludos, agradecimientos o despedidas que no contienen una pregunta.
+- greeting: saludos, agradecimientos o despedidas que no contienen una pregunta, y \
+preguntas sobre la propia conversación (por ejemplo, "¿de qué estábamos hablando?"). \
+Para estas últimas, responde en "reply" resumiendo el historial.
 - out_of_scope: temas ajenos al banco, opiniones sobre otras entidades o pedidos de \
 asesoría financiera personalizada (por ejemplo, "¿en qué debería invertir?").
 

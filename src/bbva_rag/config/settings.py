@@ -90,6 +90,21 @@ class Settings(BaseSettings):
     # --- Conversation memory ---
     history_max_messages: int = Field(default=6, ge=0)
 
+    # --- PostgreSQL (conversation history) ---
+    postgres_host: str = "localhost"
+    postgres_port: int = 55432
+    postgres_user: str = "rag"
+    postgres_password: SecretStr = SecretStr("rag")
+    postgres_db: str = "rag_assistant"
+
+    @property
+    def database_url(self) -> str:
+        password = self.postgres_password.get_secret_value()
+        return (
+            f"postgresql+psycopg://{self.postgres_user}:{password}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:

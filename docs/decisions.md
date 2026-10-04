@@ -498,3 +498,40 @@ respuesta, que son la segunda línea de defensa contra respuestas inventadas.
 
 **Limitación:** pocas preguntas por grupo (12 y 7 con puntaje); el valor debe revisarse
 con un conjunto más grande.
+
+
+## ADR-013: Historial persistente en PostgreSQL
+
+- **Fecha:** 2026-10-04
+- **Estado:** Aceptada.
+
+- **PostgreSQL** (Docker, `postgres:17-alpine`) con dos tablas: `conversations` y
+  `messages`. Cada respuesta guarda metadatos para la analítica: intención, resultado
+  (`answered`, `no_answer`, `direct_reply`, `error`), pregunta reescrita, mejor puntaje,
+  búsquedas, fuentes, tiempos por nodo, latencia total y calificación del usuario.
+- **SQLAlchemy 2.0:** tablas tipadas; el mismo código funciona con SQLite en memoria en los
+  tests.
+- **Patrón Repository** (`ConversationRepository`): único punto de acceso a la base.
+  Pregunta y respuesta se guardan en una sola transacción.
+- **Patrón Facade** (`ChatService.ask`): oculta el grafo, la memoria y la persistencia
+  detrás de una sola llamada, reutilizable por la CLI y la API.
+- **Historial de N mensajes** (`HISTORY_MAX_MESSAGES`): se leen solo los N más recientes
+  con `LIMIT`, sin cargar la conversación completa.
+- **Los errores también se guardan** (`outcome = error`) para medir la tasa de fallos.
+- **Limitación:** las tablas se crean con `create_all`; las migraciones con Alembic quedan
+  como mejora futura.
+
+  ### Resultados de la prueba
+- Una conversación retomada con `--session` respondió correctamente una pregunta de
+  seguimiento ("¿y se puede retirar la plata antes de ese plazo?") usando el historial
+  guardado en PostgreSQL.
+- La calificación del usuario quedó registrada (`feedback = 1`).
+
+### Hallazgos y limitaciones
+- Las preguntas sobre la propia conversación ("¿de qué estábamos hablando?") se
+  clasificaban como preguntas del banco y terminaban sin respuesta. Corregido en el prompt
+  de análisis: se responden directamente con el historial.
+- Una pregunta de seguimiento con error de escritura ("que plazoz se tienen?") terminó sin
+  respuesta. Pendiente de diagnóstico con la pregunta reescrita guardada en la base.
+- Las respuestas `no_answer` tardan 13–16 s, frente a ~9 s de una respuesta normal: es el
+  costo del ciclo de reformulación (dos búsquedas y dos pasadas por el reranker).

@@ -1,10 +1,10 @@
 import pytest
-from bbva_rag.llm.prompts import answer_messages
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from bbva_rag.config import Settings
 from bbva_rag.llm.context import cited_sources, format_context, format_history
 from bbva_rag.llm.factory import create_chat_model
+from bbva_rag.llm.prompts import answer_messages
 from bbva_rag.llm.schemas import QueryAnalysis
 from bbva_rag.retrieval.base import RetrievedChunk
 

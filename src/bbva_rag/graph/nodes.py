@@ -85,15 +85,16 @@ class RAGNodes:
         return {
             "answer": answer,
             "sources": cited_sources(answer, state["context"]),
+            "outcome": "answered",
             "timings": {"generate": time.perf_counter() - started},
         }
 
     def no_answer(self, state: RAGState) -> dict:
-        return {"answer": NO_ANSWER_MESSAGE, "sources": []}
+        return {"answer": NO_ANSWER_MESSAGE, "sources": [], "outcome": "no_answer"}
 
     def direct_reply(self, state: RAGState) -> dict:
         # La respuesta ya fue escrita por analyze_query
-        return {"sources": []}
+        return {"sources": [], "outcome": "direct_reply"}
 
     # ---------- Enrutamiento (es la arista condicionales) ----------
 

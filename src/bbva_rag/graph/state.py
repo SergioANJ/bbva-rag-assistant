@@ -19,6 +19,7 @@ class RAGState(TypedDict, total=False):
     attempts: int
     # Salida
     answer: str
+    outcome: str
     sources: list[dict]
     """Cada nodo agrega su propio tiempo; el reductor fusiona
       los diccionarios en lugar de reemplazarlos"""

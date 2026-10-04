@@ -23,8 +23,9 @@ Si es bank_query, reescribe la pregunta para que se entienda sin el historial:
 - No agregues datos que el usuario no dio.
 
 Si es greeting u out_of_scope, deja la pregunta original y escribe en "reply" una respuesta \
-breve y cordial en español. Para out_of_scope, explica que solo puedes ayudar con la \
-información publicada en el sitio de Bancolombia."""
+breve y cordial en español, acorde a lo que dijo el usuario (un saludo, un agradecimiento o \
+una despedida). Para out_of_scope, explica que solo puedes ayudar con la información \
+publicada en el sitio de Bancolombia."""
 
 REWRITE_SYSTEM = """\
 La búsqueda en el sitio de Bancolombia no encontró información relevante para una pregunta. \

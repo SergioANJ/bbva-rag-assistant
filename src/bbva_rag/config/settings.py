@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     reranker_enabled: bool = True
     reranker_model: str = "jinaai/jina-reranker-v2-base-multilingual"
     rerank_top_n: int = Field(default=5, gt=0)
+    relevance_threshold: float = 0.1
+    max_query_rewrites: int = Field(default=1, ge=0)
 
     # --- Local model cache (FastEmbed) ---
     models_cache_dir: Path = PROJECT_ROOT / ".cache" / "models"

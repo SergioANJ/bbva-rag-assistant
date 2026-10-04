@@ -1,6 +1,8 @@
 """Capa de almacenamiento e indexación en la Base de Datos Vectorial
 (Qdrant) vectores densos y dispersos"""
 
+import time
+
 from qdrant_client import QdrantClient, models
 
 from bbva_rag.embeddings.sparse_bm25 import SparseVector
@@ -115,3 +117,17 @@ class QdrantStore:
             with_payload=True,
         )
         return [_to_chunk(point) for point in response.points]
+    
+    def wait_until_ready(self, timeout_seconds: float = 60, interval_seconds: float = 2) -> None:
+        deadline = time.monotonic() + timeout_seconds
+        while True:
+            try:
+                self._client.get_collections()
+                return
+            except Exception as error:
+                if time.monotonic() > deadline:
+                    raise RuntimeError("Qdrant is not reachable") from error
+                time.sleep(interval_seconds)
+
+    def is_populated(self) -> bool:
+        return self._client.collection_exists(self.collection) and self.count() > 0

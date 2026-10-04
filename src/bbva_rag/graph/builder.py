@@ -1,6 +1,8 @@
-
 """Conexiones de grafos: nodos, aristas y aristas condicionales."""
 
+from dataclasses import dataclass
+
+from langchain_core.language_models import BaseChatModel
 from langgraph.graph import END, START, StateGraph
 
 from bbva_rag.config import Settings
@@ -9,6 +11,7 @@ from bbva_rag.embeddings.sparse_bm25 import BM25Encoder
 from bbva_rag.graph.nodes import RAGNodes
 from bbva_rag.graph.state import RAGState
 from bbva_rag.llm.factory import create_chat_model
+from bbva_rag.retrieval.base import Retriever
 from bbva_rag.retrieval.factory import create_retriever
 from bbva_rag.retrieval.reranker import CrossEncoderReranker
 from bbva_rag.vectorstore.qdrant_store import QdrantStore
@@ -44,8 +47,15 @@ def build_graph(nodes: RAGNodes):
     return graph.compile()
 
 
-def create_rag_graph(settings: Settings):
-    """Ensambla todas las dependencias y devuelve el grafo compilado."""
+@dataclass
+class RAGComponents:
+    llm: BaseChatModel
+    retriever: Retriever
+    reranker: CrossEncoderReranker
+
+
+def create_components(settings: Settings) -> RAGComponents:
+    """Construye todas las dependencias externas del flujo RAG."""
     cache_dir = str(settings.models_cache_dir)
     store = QdrantStore(settings.qdrant_url, settings.qdrant_collection)
     bm25 = BM25Encoder(settings.sparse_model, settings.sparse_language, cache_dir)
@@ -53,5 +63,11 @@ def create_rag_graph(settings: Settings):
         settings.retrieval_strategy, store, create_embedder(settings), bm25
     )
     reranker = CrossEncoderReranker(settings.reranker_model, cache_dir)
-    nodes = RAGNodes(create_chat_model(settings), retriever, reranker, settings)
+    return RAGComponents(create_chat_model(settings), retriever, reranker)
+
+
+def create_rag_graph(settings: Settings):
+    """Ensambla las dependencias y devuelve el grafo compilado."""
+    components = create_components(settings)
+    nodes = RAGNodes(components.llm, components.retriever, components.reranker, settings)
     return build_graph(nodes)

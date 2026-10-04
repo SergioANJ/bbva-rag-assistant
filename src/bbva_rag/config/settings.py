@@ -68,7 +68,15 @@ class Settings(BaseSettings):
 
     # --- Retrieval ---
     retrieval_strategy: Literal["semantic", "bm25", "hybrid"] = "hybrid"
-    retrieval_top_k: int = Field(default=20, gt=0)
+    retrieval_top_k: int = Field(default=15, gt=0)
+
+    # --- Reranker ---
+    reranker_enabled: bool = True
+    reranker_model: str = "jinaai/jina-reranker-v2-base-multilingual"
+    rerank_top_n: int = Field(default=5, gt=0)
+
+    # --- Local model cache (FastEmbed) ---
+    models_cache_dir: Path = PROJECT_ROOT / ".cache" / "models"
 
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
@@ -76,6 +84,8 @@ class Settings(BaseSettings):
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
         if self.chunk_min_chars >= self.chunk_size:
             raise ValueError("CHUNK_MIN_CHARS must be smaller than CHUNK_SIZE")
+        if self.rerank_top_n > self.retrieval_top_k:
+            raise ValueError("RERANK_TOP_N cannot exceed RETRIEVAL_TOP_K")
         return self
 
 

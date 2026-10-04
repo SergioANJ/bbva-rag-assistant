@@ -87,6 +87,9 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=800, gt=0)
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
 
+    # --- Conversation memory ---
+    history_max_messages: int = Field(default=6, ge=0)
+
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:

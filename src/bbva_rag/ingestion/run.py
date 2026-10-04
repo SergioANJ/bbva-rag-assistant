@@ -12,6 +12,7 @@ from bbva_rag.config import Settings, get_settings, setup_logging
 from bbva_rag.embeddings.factory import create_embedder
 from bbva_rag.embeddings.sparse_bm25 import BM25Encoder
 from bbva_rag.ingestion.chunking import build_splitter, chunk_page
+from bbva_rag.retrieval.reranker import CrossEncoderReranker
 from bbva_rag.vectorstore.qdrant_store import QdrantStore
 
 
@@ -66,13 +67,32 @@ def index_chunks(settings: Settings, chunks: list[dict]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Chunk the clean corpus and index it in Qdrant.")
     parser.add_argument("--skip-index", action="store_true", help="only build chunks.jsonl")
+    parser.add_argument(
+        "--if-empty", action="store_true", help="skip indexing if the collection already has data"
+    )
+    parser.add_argument(
+        "--download-models", action="store_true", help="download the reranker into the cache"
+    )
     args = parser.parse_args()
 
     setup_logging()
     settings = get_settings()
-    chunks = build_chunks(settings)
-    if not args.skip_index:
-        index_chunks(settings, chunks)
+
+    if args.skip_index:
+        build_chunks(settings)
+        return
+
+    store = QdrantStore(settings.qdrant_url, settings.qdrant_collection)
+    store.wait_until_ready()
+    if args.if_empty and store.is_populated():
+        logger.info(f"Collection '{settings.qdrant_collection}' already has data; skipping indexing")
+    else:
+        index_chunks(settings, build_chunks(settings))
+
+    if args.download_models:
+        logger.info(f"Downloading reranker {settings.reranker_model} (only the first time)")
+        CrossEncoderReranker(settings.reranker_model, str(settings.models_cache_dir))
+        logger.info("Models ready")
 
 
 if __name__ == "__main__":

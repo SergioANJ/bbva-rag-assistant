@@ -428,3 +428,47 @@ Se usa la búsqueda **híbrida** por defecto (`RETRIEVAL_STRATEGY=hybrid`):
 - Con 15 preguntas, cada pregunta equivale a ~7 puntos porcentuales; diferencias de un
   solo valor no son concluyentes. Ampliar el golden set queda como mejora futura.
 - La evaluación es a nivel de página, no de fragmento.
+
+## ADR-011: Reranker multilingüe y número de candidatos
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Modelos disponibles en FastEmbed
+Solo uno es multilingüe: `jinaai/jina-reranker-v2-base-multilingual` (1,11 GB). Los demás
+están entrenados en inglés o en chino e inglés.
+
+### Comparación (20 candidatos de la búsqueda híbrida)
+| Configuración | hit@1 | hit@3 | hit@5 | MRR | Tiempo del reranker |
+|---|---|---|---|---|---|
+| Híbrida, sin reranker | 47 % | 60 % | 60 % | 0,56 | — |
+| + `ms-marco-MiniLM-L-12-v2` (inglés) | 40 % | 73 % | 73 % | 0,56 | 3,73 s |
+| + `jina-reranker-v2-base-multilingual` | 67 % | 87 % | 93 % | 0,75 | 7,58 s |
+
+- El reranker en inglés mejora unas preguntas y empeora otras (MRR sin cambios): no
+  entiende el español y se guía por coincidencias superficiales.
+- El multilingüe sube al top 5 todas las páginas correctas que estaban entre los
+  candidatos: alcanza el techo posible (hit@5 = hit@20 = 93 %).
+- **Techo:** el reranker solo reordena; no puede recuperar páginas que la búsqueda no trajo
+  (q03).
+
+### Número de candidatos
+| Candidatos | hit@5 | MRR | Tiempo del reranker |
+|---|---|---|---|
+| 20 | 93 % | 0,75 | 7,58 s |
+| **15** | **93 %** | **0,75** | **5,58 s** |
+| 10 | 87 % | 0,73 | 3,39 s |
+
+Se eligen **15 candidatos**: misma calidad que 20 con un 26 % menos de latencia. Con 10 se
+pierde una pregunta (q04, cuya página estaba en la posición 13). Configurable con
+`RETRIEVAL_TOP_K`.
+
+### Limitaciones
+- **Licencia:** el modelo es CC-BY-NC-4.0 (uso no comercial). Válido para esta prueba; en
+  producción debe reemplazarse por un reranker con licencia comercial (por ejemplo,
+  `bge-reranker-v2-m3`, Apache 2.0, o un servicio de reranking por API). La interfaz del
+  reranker aísla ese cambio en una sola clase.
+- **Latencia:** ~5,6 s por pregunta en CPU de portátil. Mejoras posibles: GPU, modelo
+  cuantizado o reranking por API.
+- Variabilidad: entre ejecuciones, los embeddings de OpenAI y los empates de RRF pueden
+  mover alguna posición; las mejoras del reranker son mucho mayores que esa variación.

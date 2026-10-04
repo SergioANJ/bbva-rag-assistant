@@ -13,8 +13,15 @@ class SparseVector:
 
 
 class BM25Encoder:
-    def __init__(self, model_name: str = "Qdrant/bm25", language: str = "spanish"):
-        self._model = SparseTextEmbedding(model_name=model_name, language=language)
+    def __init__(
+        self,
+        model_name: str = "Qdrant/bm25",
+        language: str = "spanish",
+        cache_dir: str | None = None,
+    ):
+        self._model = SparseTextEmbedding(
+            model_name=model_name, language=language, cache_dir=cache_dir
+        )
 
     def embed_documents(self, texts: list[str]) -> list[SparseVector]:
         return [

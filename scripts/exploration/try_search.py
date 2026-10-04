@@ -1,6 +1,5 @@
 """Exploración: comparación de la búsqueda semántica, BM25 e híbrida (RRF) en preguntas reales"""
 
-
 from qdrant_client import QdrantClient, models
 
 from bbva_rag.config import get_settings

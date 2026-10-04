@@ -4,10 +4,27 @@
 from qdrant_client import QdrantClient, models
 
 from bbva_rag.embeddings.sparse_bm25 import SparseVector
+from bbva_rag.retrieval.base import RetrievedChunk
 
 DENSE = "dense"
 SPARSE = "bm25"
 PAYLOAD_FIELDS = ("url", "title", "section", "fetched_at", "position", "text")
+
+
+def _to_qdrant_sparse(vector: SparseVector) -> models.SparseVector:
+    return models.SparseVector(indices=vector.indices, values=vector.values)
+
+
+def _to_chunk(point: models.ScoredPoint) -> RetrievedChunk:
+    payload = point.payload or {}
+    return RetrievedChunk(
+        chunk_id=str(point.id),
+        url=payload["url"],
+        title=payload["title"],
+        section=payload["section"],
+        text=payload["text"],
+        score=point.score,
+    )
 
 
 class QdrantStore:
@@ -45,7 +62,7 @@ class QdrantStore:
                 id=chunk["chunk_id"],
                 vector={
                     DENSE: dense,
-                    SPARSE: models.SparseVector(indices=sparse.indices, values=sparse.values),
+                    SPARSE: _to_qdrant_sparse(sparse),
                 },
                 payload={field: chunk[field] for field in PAYLOAD_FIELDS},
             )
@@ -60,3 +77,41 @@ class QdrantStore:
 
     def count(self) -> int:
         return self._client.count(collection_name=self.collection, exact=True).count
+
+    def search_dense(self, vector: list[float], limit: int) -> list[RetrievedChunk]:
+        response = self._client.query_points(
+            collection_name=self.collection,
+            query=vector,
+            using=DENSE,
+            limit=limit,
+            with_payload=True,
+        )
+        return [_to_chunk(point) for point in response.points]
+
+    def search_sparse(self, vector: SparseVector, limit: int) -> list[RetrievedChunk]:
+        response = self._client.query_points(
+            collection_name=self.collection,
+            query=_to_qdrant_sparse(vector),
+            using=SPARSE,
+            limit=limit,
+            with_payload=True,
+        )
+        return [_to_chunk(point) for point in response.points]
+
+    def search_hybrid(
+        self, dense: list[float], sparse: SparseVector, limit: int
+    ) -> list[RetrievedChunk]:
+        prefetch_limit = limit * 2
+        response = self._client.query_points(
+            collection_name=self.collection,
+            prefetch=[
+                models.Prefetch(query=dense, using=DENSE, limit=prefetch_limit),
+                models.Prefetch(
+                    query=_to_qdrant_sparse(sparse), using=SPARSE, limit=prefetch_limit
+                ),
+            ],
+            query=models.FusionQuery(fusion=models.Fusion.RRF),
+            limit=limit,
+            with_payload=True,
+        )
+        return [_to_chunk(point) for point in response.points]

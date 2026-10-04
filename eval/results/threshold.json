@@ -1,0 +1,353 @@
+{
+  "answerable": [
+    {
+      "id": "q01",
+      "intent": "bank_query",
+      "score": 1.4408247470855713,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-cuenta-bancolombia-con-ppt",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-cuenta-pension",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-cuenta-pension",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-cuenta-pension",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-cuenta-pension"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q02",
+      "intent": "bank_query",
+      "score": 0.6814042329788208,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-retirar-dinero-si-perdi-mi-tarjeta",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-retirar-cajero-electronico",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-cuotas-tarjetas-credito",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-hacer-retiros",
+        "https://www.bancolombia.com/personas/productos/tarjetas-credito/visa"
+      ],
+      "correct_in_context": false
+    },
+    {
+      "id": "q03",
+      "intent": "bank_query",
+      "score": 1.0712686777114868,
+      "urls": [
+        "https://www.bancolombia.com/personas/contactanos/bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/seguimiento-a-solicitudes",
+        "https://www.bancolombia.com/personas/seguros/salud-vida/plan-vida-a-la-medida",
+        "https://www.bancolombia.com/personas/seguros/fraude/proteccion-integral-plus-cuentas",
+        "https://www.bancolombia.com/personas/seguros/salud-vida/plan-vida-a-la-medida"
+      ],
+      "correct_in_context": false
+    },
+    {
+      "id": "q04",
+      "intent": "bank_query",
+      "score": 1.7899787425994873,
+      "urls": [
+        "https://www.bancolombia.com/personas/contactanos",
+        "https://www.bancolombia.com/personas/contactanos",
+        "https://www.bancolombia.com/personas/contactanos/bancolombia",
+        "https://www.bancolombia.com/personas/contactanos",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/ingresar-tabot-whatsapp"
+      ],
+      "correct_in_context": false
+    },
+    {
+      "id": "q05",
+      "intent": "bank_query",
+      "score": 0.22548526525497437,
+      "urls": [
+        "https://www.bancolombia.com/negocios/productos/financiacion/creditos/findeter",
+        "https://www.bancolombia.com/personas/productos/cuentas/campanas-politicas",
+        "https://www.bancolombia.com/personas/productos/cuentas/banconautas",
+        "https://www.bancolombia.com/personas/productos/cuentas/preferencial",
+        "https://www.bancolombia.com/personas/productos/cuentas/ahorro-programado"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q06",
+      "intent": "bank_query",
+      "score": 0.2755119800567627,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/avance-tarjeta-credito",
+        "https://www.bancolombia.com/personas/productos/ampliacion-plazo",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/ampliacion-plazo-3-60",
+        "https://www.bancolombia.com/personas/productos/tarjetas-credito",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/avance-tarjeta-credito"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q07",
+      "intent": "bank_query",
+      "score": 2.0034031867980957,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-transacciones-sucursal-fisica",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/cuanto-retirar-diariamente"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q08",
+      "intent": "bank_query",
+      "score": 1.5996954441070557,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q09",
+      "intent": "bank_query",
+      "score": 1.1583690643310547,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/transferencias-cajero-electronico",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/transferencias-cajero-electronico",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/trasferencias-cuentas-inscritas-app-personas",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/solo-puedo-transferir-a-cuentas-bancolombia-desde-la-app"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q10",
+      "intent": "bank_query",
+      "score": 0.970848798751831,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-fondos-inversion",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-fondos-inversion",
+        "https://www.bancolombia.com/personas/consumidor-financiero",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-fondos-inversion",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abrir-fondos-inversion"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q11",
+      "intent": "bank_query",
+      "score": 1.295054316520691,
+      "urls": [
+        "https://www.bancolombia.com/personas/seguros/deudores",
+        "https://www.bancolombia.com/personas/seguros/deudores",
+        "https://www.bancolombia.com/personas/seguros",
+        "https://www.bancolombia.com/personas/seguros/radicar-endosos-poliza-colectiva",
+        "https://www.bancolombia.com/personas/creditos/vivienda/compra-de-cartera-de-credito-hipotecario"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q12",
+      "intent": "bank_query",
+      "score": 0.24208205938339233,
+      "urls": [
+        "https://www.bancolombia.com/personas",
+        "https://www.bancolombia.com/personas/creditos/consumo/libranza-para-pensionados-fopep",
+        "https://www.bancolombia.com/personas/creditos/consumo/credito-libre-inversion",
+        "https://www.bancolombia.com/acerca-de/glosario",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/compras-internacionales-meses"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q13",
+      "intent": "bank_query",
+      "score": -0.2620339095592499,
+      "urls": [
+        "https://www.bancolombia.com/acerca-de",
+        "https://www.bancolombia.com/personas/productos/tarjetas-credito/mastercard/unica",
+        "https://www.bancolombia.com/personas/productos/cuentas",
+        "https://www.bancolombia.com/personas/productos/cuentas/tarjetas-debito",
+        "https://www.bancolombia.com/personas/productos/cuentas/pension"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q14",
+      "intent": "bank_query",
+      "score": 0.24867533147335052,
+      "urls": [
+        "https://www.bancolombia.com/personas/seguros",
+        "https://www.bancolombia.com/personas/seguros/online",
+        "https://www.bancolombia.com/personas/seguros/fraude",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/protege-tu-empresa",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/extra-cupo-autorizado"
+      ],
+      "correct_in_context": true
+    },
+    {
+      "id": "q15",
+      "intent": "bank_query",
+      "score": 1.7126563787460327,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-transacciones-sucursal-fisica",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-desmarcar-cuenta-ahorros-del-4-por-mil",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/topes-diarios-canales-bancolombia"
+      ],
+      "correct_in_context": true
+    }
+  ],
+  "unanswerable": [
+    {
+      "id": "n01",
+      "intent": "bank_query",
+      "score": -0.9558688402175903,
+      "urls": [
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/sarlaft-bancolombia-lavado-activos",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/sarlaft-bancolombia-lavado-activos",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/phishing",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/phishing",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/sarlaft-bancolombia-lavado-activos"
+      ]
+    },
+    {
+      "id": "n02",
+      "intent": "out_of_scope",
+      "score": null,
+      "urls": []
+    },
+    {
+      "id": "n03",
+      "intent": "bank_query",
+      "score": 0.5765650868415833,
+      "urls": [
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/protege-tu-empresa",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/protege-tu-empresa",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-hacer-consignaciones",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/como-me-registro-sucursal-virtual",
+        "https://www.bancolombia.com/educacion-financiera/seguridad-de-la-informacion/protege-tu-empresa"
+      ]
+    },
+    {
+      "id": "n04",
+      "intent": "bank_query",
+      "score": -0.12775585055351257,
+      "urls": [
+        "https://www.bancolombia.com/personas/productos-servicios/compra-venta-dolares-efectivo",
+        "https://www.bancolombia.com/personas/productos-servicios/compra-venta",
+        "https://www.bancolombia.com/personas/tarifario/cuentas",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/cambiar-retirar-monedas-billetes",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/tasa-de-interes-tarjeta-de-credito"
+      ]
+    },
+    {
+      "id": "n05",
+      "intent": "bank_query",
+      "score": -0.17910423874855042,
+      "urls": [
+        "https://www.bancolombia.com/personas/productos-servicios/inversiones/internacionales/renta-variable-internacional",
+        "https://www.bancolombia.com/personas/defensor-financiero",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/abonar-a-capital-bancolombia",
+        "https://www.bancolombia.com/personas/productos-servicios/inversiones/internacionales/renta-fija-internacional",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/informacion-sucursal-fisica"
+      ]
+    },
+    {
+      "id": "n06",
+      "intent": "bank_query",
+      "score": -0.7218445539474487,
+      "urls": [
+        "https://www.bancolombia.com/acerca-de/documentos-legales/proteccion-datos",
+        "https://www.bancolombia.com/acerca-de/contactanos",
+        "https://www.bancolombia.com/personas/necesidades/planea-retiro",
+        "https://www.bancolombia.com/educacion-financiera/finanzas-personales",
+        "https://www.bancolombia.com/acerca-de/documentos-legales/proteccion-datos"
+      ]
+    },
+    {
+      "id": "n07",
+      "intent": "bank_query",
+      "score": -1.229369878768921,
+      "urls": [
+        "https://www.bancolombia.com/personas/beneficios/ofertas/usarapps",
+        "https://www.bancolombia.com/personas/tarifario/cuentas",
+        "https://www.bancolombia.com/personas/beneficios/ofertas/usarapps",
+        "https://www.bancolombia.com/personas/beneficios/ofertas/usarapps",
+        "https://www.bancolombia.com/personas/beneficios/ofertas/usarapps"
+      ]
+    },
+    {
+      "id": "n08",
+      "intent": "bank_query",
+      "score": -0.29973724484443665,
+      "urls": [
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-cuotas-tarjetas-credito",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-cuotas-tarjetas-credito",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-tarjetas-credito-no-propias",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-cuotas-tarjetas-credito",
+        "https://www.bancolombia.com/centro-de-ayuda/preguntas-frecuentes/pagar-cuotas-tarjetas-credito"
+      ]
+    }
+  ],
+  "table": [
+    {
+      "threshold": -0.6,
+      "accepted": 1.0,
+      "rejected": 0.42857142857142855
+    },
+    {
+      "threshold": -0.5,
+      "accepted": 1.0,
+      "rejected": 0.42857142857142855
+    },
+    {
+      "threshold": -0.4,
+      "accepted": 1.0,
+      "rejected": 0.42857142857142855
+    },
+    {
+      "threshold": -0.3,
+      "accepted": 1.0,
+      "rejected": 0.42857142857142855
+    },
+    {
+      "threshold": -0.2,
+      "accepted": 0.9166666666666666,
+      "rejected": 0.5714285714285714
+    },
+    {
+      "threshold": -0.1,
+      "accepted": 0.9166666666666666,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.0,
+      "accepted": 0.9166666666666666,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.1,
+      "accepted": 0.9166666666666666,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.2,
+      "accepted": 0.9166666666666666,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.3,
+      "accepted": 0.5833333333333334,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.4,
+      "accepted": 0.5833333333333334,
+      "rejected": 0.8571428571428571
+    },
+    {
+      "threshold": 0.5,
+      "accepted": 0.5833333333333334,
+      "rejected": 0.8571428571428571
+    }
+  ]
+}

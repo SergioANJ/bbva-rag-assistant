@@ -66,12 +66,38 @@ class Settings(BaseSettings):
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "bancolombia_chunks"
 
+    # --- Retrieval ---
+    retrieval_strategy: Literal["semantic", "bm25", "hybrid"] = "hybrid"
+    retrieval_top_k: int = Field(default=15, gt=0)
+
+    # --- Reranker ---
+    reranker_enabled: bool = True
+    reranker_model: str = "jinaai/jina-reranker-v2-base-multilingual"
+    rerank_top_n: int = Field(default=5, gt=0)
+    relevance_threshold: float = 0.0
+    max_query_rewrites: int = Field(default=1, ge=0)
+
+    # --- Local model cache (FastEmbed) ---
+    models_cache_dir: Path = PROJECT_ROOT / ".cache" / "models"
+
+    # --- LLM ---
+    llm_provider: Literal["openai"] = "openai"
+    llm_model: str = "gpt-4.1-mini"
+    llm_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    llm_max_tokens: int = Field(default=800, gt=0)
+    llm_timeout_seconds: float = Field(default=30.0, gt=0)
+
+    # --- Conversation memory ---
+    history_max_messages: int = Field(default=6, ge=0)
+
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
         if self.chunk_min_chars >= self.chunk_size:
             raise ValueError("CHUNK_MIN_CHARS must be smaller than CHUNK_SIZE")
+        if self.rerank_top_n > self.retrieval_top_k:
+            raise ValueError("RERANK_TOP_N cannot exceed RETRIEVAL_TOP_K")
         return self
 
 

@@ -1,9 +1,9 @@
 import pytest
-from bbva_rag.services.chat import ERROR_MESSAGE, ChatService
 from sqlalchemy.pool import StaticPool
 
 from bbva_rag.memory.database import create_session_factory
 from bbva_rag.memory.repository import ConversationRepository
+from bbva_rag.services.chat import ERROR_MESSAGE, ChatService
 
 
 def make_repository() -> ConversationRepository:

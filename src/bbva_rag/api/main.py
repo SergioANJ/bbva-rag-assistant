@@ -4,12 +4,17 @@ uvicorn bbva_rag.api.main:app"""
 import uuid
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
+from bbva_rag.analytics.metrics import build_exchanges, summarize
+from bbva_rag.analytics.topics import cluster_questions
 from bbva_rag.api.schemas import ChatRequest, ChatResponse, FeedbackRequest, MessageOut
 from bbva_rag.config import Settings, get_settings, setup_logging
+from bbva_rag.embeddings.base import Embedder
+from bbva_rag.embeddings.factory import create_embedder
 from bbva_rag.graph.builder import create_rag_graph
 from bbva_rag.memory.database import create_session_factory
 from bbva_rag.memory.repository import ConversationRepository
@@ -22,6 +27,9 @@ class AppServices:
     chat: ChatService
     repository: ConversationRepository
     store: QdrantStore | None
+    embedder: Embedder | None = None
+    minutes_saved_per_answer: float = 5.0
+    max_topics: int = 6
 
 
 def build_services(settings: Settings) -> AppServices:
@@ -29,7 +37,14 @@ def build_services(settings: Settings) -> AppServices:
     repository = ConversationRepository(create_session_factory(settings.database_url))
     chat = ChatService(create_rag_graph(settings), repository, settings.history_max_messages)
     store = QdrantStore(settings.qdrant_url, settings.qdrant_collection)
-    return AppServices(chat, repository, store)
+    return AppServices(
+        chat,
+        repository,
+        store,
+        embedder=create_embedder(settings),
+        minutes_saved_per_answer=settings.analytics_minutes_saved_per_answer,
+        max_topics=settings.analytics_max_topics,
+    )
 
 
 def create_app(services: AppServices | None = None) -> FastAPI:
@@ -79,6 +94,17 @@ def create_app(services: AppServices | None = None) -> FastAPI:
         except ValueError as error:
             raise HTTPException(status_code=404, detail=str(error)) from error
         return Response(status_code=204)
+
+    @app.get("/analytics")
+    def analytics(request: Request, days: int | None = None, topics: bool = False):
+        services = get_services(request)
+        since = datetime.now(UTC) - timedelta(days=days) if days else None
+        exchanges = build_exchanges(services.repository.all_messages(since))
+        result = summarize(exchanges, services.minutes_saved_per_answer)
+        if topics and services.embedder is not None:
+            questions = [e["question"] for e in exchanges if e["intent"] == "bank_query"]
+            result["topics"] = cluster_questions(questions, services.embedder, services.max_topics)
+        return result
 
     return app
 

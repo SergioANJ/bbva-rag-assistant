@@ -100,6 +100,10 @@ class Settings(BaseSettings):
     # --- API / UI ---
     api_base_url: str = "http://localhost:8000"
 
+    # --- Analytics ---
+    analytics_minutes_saved_per_answer: float = Field(default=5.0, gt=0)
+    analytics_max_topics: int = Field(default=6, ge=2)
+
     @property
     def database_url(self) -> str:
         password = self.postgres_password.get_secret_value()

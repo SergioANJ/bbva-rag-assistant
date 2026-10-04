@@ -557,3 +557,46 @@ con un conjunto más grande.
 En el puerto 8000 había otros servicios escuchando en IPv6 (un contenedor de otro proyecto y
 WSL). `localhost` resolvía primero a IPv6 y las peticiones llegaban a otro servicio (404).
 Solución: API en `127.0.0.1:8001` y `API_BASE_URL` con la dirección IPv4 explícita.
+
+
+## ADR-015: Analítica del historial de conversaciones
+
+- **Fecha:** 2026-10-04
+- **Estado:** Aceptada.
+
+### Diseño
+- Las métricas se calculan con funciones puras sobre el historial de PostgreSQL
+  (`analytics/metrics.py`); cada respuesta se empareja con la pregunta que la originó.
+- Tres formas de consulta: reporte en terminal (`python -m bbva_rag.analytics.report`),
+  endpoint `GET /analytics` y página de analítica en Streamlit.
+- **Temas:** embeddings de las preguntas + K-Means, eligiendo el número de temas por
+  coeficiente de silueta; cada tema se describe con sus palabras más frecuentes y ejemplos.
+  Es opcional porque requiere vectorizar las preguntas.
+
+### Métricas
+| Métrica | Pregunta de negocio |
+|---|---|
+| Preguntas, conversaciones, preguntas por día | ¿Se usa el asistente? |
+| Tasa de respuesta (solo preguntas del banco) | ¿Cuántas preguntas se resuelven? |
+| Preguntas sin respuesta | ¿Qué información falta en el sitio? |
+| Tasa de reformulación | ¿Cuántas veces no basta la primera búsqueda? |
+| Latencia p50/p95 y por nodo | ¿Cuánto espera el usuario y dónde está el cuello de botella? |
+| Satisfacción | ¿Las respuestas sirven? |
+| Páginas y secciones más citadas | ¿Qué contenido es el más consultado? |
+| Tiempo ahorrado estimado | Impacto: respuestas × minutos de búsqueda manual (supuesto: 5 min, configurable) |
+
+### Primera lectura con uso real (16 preguntas, 3 conversaciones)
+- Tasa de respuesta del 73 %; satisfacción del 70 % (10 calificadas).
+- 3 de 4 preguntas sin respuesta son sobre plazos del CDT: confirma el vacío de contenido
+  detectado al construir el corpus (12 de 1.625 fragmentos mencionan el CDT).
+- Latencia p50 de 10,2 s, de la cual el reranker aporta 7,9 s (~80 %).
+
+### Errores encontrados por los tests
+- Las siglas de tres letras ("cdt", "dtf") se descartaban de las palabras clave por un
+  filtro de longitud. Corregido, ampliando la lista de palabras vacías cortas.
+- K-Means intentaba más grupos que puntos distintos; ahora el número de temas se limita a
+  los vectores distintos.
+
+### Limitaciones
+- El tiempo ahorrado es una estimación basada en un supuesto, no una medición.
+- Con pocas preguntas, los temas son poco nítidos.

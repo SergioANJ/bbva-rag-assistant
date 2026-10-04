@@ -389,3 +389,42 @@ pregunta en el grafo y la comparación con `text-embedding-3-large` en la evalua
 - Reranker sobre los 20 candidatos de la búsqueda híbrida.
 - Medir primero si el fragmento correcto aparece entre los 20 candidatos: si no aparece,
   el reranker no puede rescatarlo.
+
+## ADR-010: Estrategia de recuperación por defecto → híbrida (medida con golden set)
+
+- **Fecha:** 2026-10-03
+- **Estado:** Aceptada.
+
+### Método
+Golden set de 15 preguntas escritas como las haría un usuario, con la página correcta de
+cada una (`eval/golden_set.jsonl`), de distintos tipos: paráfrasis, siglas, términos
+exactos, tablas, preguntas frecuentes y definiciones. Se mide la posición de la primera
+página correcta entre 20 candidatos (`python -m bbva_rag.evaluation.retrieval`).
+
+### Resultados
+| Estrategia | hit@1 | hit@3 | hit@5 | hit@20 | MRR |
+|---|---|---|---|---|---|
+| Semántica | 47 % | 60 % | 67 % | 87 % | 0,56 |
+| BM25 | 40 % | 40 % | 67 % | 87 % | 0,48 |
+| Híbrida (RRF) | 53 % | 60 % | 60 % | 93 % | 0,60 |
+
+### Decisión
+Se usa la búsqueda **híbrida** por defecto (`RETRIEVAL_STRATEGY=hybrid`):
+- Mejor hit@20 (93 %): es la estrategia que más veces trae la página correcta entre los
+  candidatos que recibirá el reranker.
+- Mejor MRR (0,60) y hit@1 (53 %).
+- La semántica y BM25 fallan en preguntas distintas: la semántica no encuentra siglas
+  ("DTF") y BM25 no encuentra paráfrasis ("sacar plata en efectivo" frente a "avance").
+  La híbrida recupera ambos tipos.
+
+### Hallazgos
+- La fusión RRF no siempre ordena mejor que una estrategia individual (hit@5: 60 % frente
+  a 67 % de la semántica): es buena para reunir candidatos, no para ordenarlos.
+- Brecha entre hit@20 (93 %) y hit@5 (60 %): en 4 de cada 10 preguntas la página correcta
+  se recupera, pero no llegaría al LLM sin un reordenamiento. **Justifica el reranker.**
+- Pregunta no recuperada por la híbrida: q03 (línea telefónica, dato en tabla).
+
+### Limitaciones
+- Con 15 preguntas, cada pregunta equivale a ~7 puntos porcentuales; diferencias de un
+  solo valor no son concluyentes. Ampliar el golden set queda como mejora futura.
+- La evaluación es a nivel de página, no de fragmento.

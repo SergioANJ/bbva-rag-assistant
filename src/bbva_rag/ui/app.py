@@ -34,6 +34,7 @@ with st.sidebar:
 def send_feedback(message_id: int, value: int) -> None:
     httpx.post(f"{API}/messages/{message_id}/feedback", json={"value": value}, timeout=10)
 
+
 try:
     response = httpx.get(
         f"{API}/conversations/{st.session_state.conversation_id}/messages", timeout=10

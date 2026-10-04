@@ -1,6 +1,6 @@
 """Repositorio: el único lugar que lee o escribe el historial de conversaciones."""
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from bbva_rag.memory.models import Conversation, Message, utcnow
@@ -11,8 +11,8 @@ class ConversationRepository:
         self._session_factory = session_factory
 
     def add_exchange(self, conversation_id: str, question: str, answer: str, metadata: dict) -> int:
-        """Guarda la pregunta y la respuesta en una sola transacción; 
-           devuelve el ID de la respuesta"""
+        """Guarda la pregunta y la respuesta en una sola transacción;
+        devuelve el ID de la respuesta"""
         with self._session_factory.begin() as session:
             conversation = session.get(Conversation, conversation_id)
             if conversation is None:
@@ -48,3 +48,33 @@ class ConversationRepository:
             if message is None or message.role != "assistant":
                 raise ValueError(f"No assistant message with id {message_id}")
             message.feedback = value
+
+    def conversation_messages(self, conversation_id: str) -> list[dict]:
+        """Todos los mensajes de una conversación, del más antiguo al
+        más antiguo (para la interfaz de usuario)"""
+        with self._session_factory() as session:
+            rows = session.scalars(
+                select(Message)
+                .where(Message.conversation_id == conversation_id)
+                .order_by(Message.id)
+            ).all()
+        return [
+            {
+                "id": m.id,
+                "role": m.role,
+                "content": m.content,
+                "sources": m.sources or [],
+                "feedback": m.feedback,
+                "created_at": m.created_at,
+            }
+            for m in rows
+        ]
+
+    def ping(self) -> bool:
+        """Verdadero si la base de datos responde"""
+        try:
+            with self._session_factory() as session:
+                session.execute(text("SELECT 1"))
+            return True
+        except Exception:
+            return False

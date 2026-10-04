@@ -97,6 +97,9 @@ class Settings(BaseSettings):
     postgres_password: SecretStr = SecretStr("rag")
     postgres_db: str = "rag_assistant"
 
+    # --- API / UI ---
+    api_base_url: str = "http://localhost:8000"
+
     @property
     def database_url(self) -> str:
         password = self.postgres_password.get_secret_value()

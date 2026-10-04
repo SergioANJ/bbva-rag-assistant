@@ -66,6 +66,10 @@ class Settings(BaseSettings):
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "bancolombia_chunks"
 
+    # --- Retrieval ---
+    retrieval_strategy: Literal["semantic", "bm25", "hybrid"] = "hybrid"
+    retrieval_top_k: int = Field(default=20, gt=0)
+
     @model_validator(mode="after")
     def _validate_chunking(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:

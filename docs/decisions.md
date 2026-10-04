@@ -472,3 +472,29 @@ pierde una pregunta (q04, cuya página estaba en la posición 13). Configurable 
   cuantizado o reranking por API.
 - Variabilidad: entre ejecuciones, los embeddings de OpenAI y los empates de RRF pueden
   mover alguna posición; las mejoras del reranker son mucho mayores que esa variación.
+
+  ## ADR-012: Umbral de relevancia del grafo
+
+- **Fecha:** 2026-10-04
+- **Estado:** Aceptada.
+
+Se midió el mejor puntaje del reranker en las 15 preguntas del golden set y en 8 preguntas
+sobre temas del banco sin respuesta en el corpus (`eval/negative_set.jsonl`,
+`python -m bbva_rag.evaluation.threshold`).
+
+| Umbral | Respondibles aceptadas | Sin respuesta rechazadas |
+|---|---|---|
+| −0,3 | 100 % | 43 % |
+| **0,0** | **92 %** | **86 %** |
+| 0,3 | 58 % | 86 % |
+
+**Decisión:** `RELEVANCE_THRESHOLD=0.0`. Rechaza la mayoría de los contextos inútiles. La
+única pregunta respondible por debajo (q13, −0,26) no se pierde: el grafo la reformula y
+busca de nuevo.
+
+**Hallazgo:** algunos contextos sin la página correcta obtienen puntajes altos (q02, q03,
+q04), porque contienen páginas parecidas. El umbral no reemplaza las reglas del prompt de
+respuesta, que son la segunda línea de defensa contra respuestas inventadas.
+
+**Limitación:** pocas preguntas por grupo (12 y 7 con puntaje); el valor debe revisarse
+con un conjunto más grande.

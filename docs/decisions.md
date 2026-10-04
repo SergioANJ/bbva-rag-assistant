@@ -535,3 +535,25 @@ con un conjunto más grande.
   respuesta. Pendiente de diagnóstico con la pregunta reescrita guardada en la base.
 - Las respuestas `no_answer` tardan 13–16 s, frente a ~9 s de una respuesta normal: es el
   costo del ciclo de reformulación (dos búsquedas y dos pasadas por el reranker).
+
+  ## ADR-014: API con FastAPI e interfaz con Streamlit
+
+- **Fecha:** 2026-10-04
+- **Estado:** Aceptada.
+
+- **API y UI separadas:** la API expone el `ChatService` y puede servir a cualquier cliente;
+  la interfaz solo consume la API y no conoce el grafo ni la base de datos.
+- **Endpoints:** `POST /chat`, `GET /conversations/{id}/messages`,
+  `POST /messages/{id}/feedback` y `GET /health` (503 si Qdrant o PostgreSQL no responden).
+  Documentación automática en `/docs`.
+- **Modelos cargados una vez** al arrancar (`lifespan`), no en cada petición.
+- **Endpoints síncronos (`def`):** el grafo y la base son bloqueantes; FastAPI ejecuta cada
+  petición en un hilo y la API sigue atendiendo otras.
+- **Validación con pydantic:** peticiones inválidas responden 422 antes de llegar al código.
+- **Interfaz Streamlit:** chat con fuentes, calificación 👍/👎, nueva conversación y
+  retomar por ID. Los mensajes se leen siempre desde la API (lo que se ve es lo persistido).
+
+### Problema encontrado
+En el puerto 8000 había otros servicios escuchando en IPv6 (un contenedor de otro proyecto y
+WSL). `localhost` resolvía primero a IPv6 y las peticiones llegaban a otro servicio (404).
+Solución: API en `127.0.0.1:8001` y `API_BASE_URL` con la dirección IPv4 explícita.

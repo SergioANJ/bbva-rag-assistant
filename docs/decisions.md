@@ -520,3 +520,18 @@ con un conjunto más grande.
 - **Los errores también se guardan** (`outcome = error`) para medir la tasa de fallos.
 - **Limitación:** las tablas se crean con `create_all`; las migraciones con Alembic quedan
   como mejora futura.
+
+  ### Resultados de la prueba
+- Una conversación retomada con `--session` respondió correctamente una pregunta de
+  seguimiento ("¿y se puede retirar la plata antes de ese plazo?") usando el historial
+  guardado en PostgreSQL.
+- La calificación del usuario quedó registrada (`feedback = 1`).
+
+### Hallazgos y limitaciones
+- Las preguntas sobre la propia conversación ("¿de qué estábamos hablando?") se
+  clasificaban como preguntas del banco y terminaban sin respuesta. Corregido en el prompt
+  de análisis: se responden directamente con el historial.
+- Una pregunta de seguimiento con error de escritura ("que plazoz se tienen?") terminó sin
+  respuesta. Pendiente de diagnóstico con la pregunta reescrita guardada en la base.
+- Las respuestas `no_answer` tardan 13–16 s, frente a ~9 s de una respuesta normal: es el
+  costo del ciclo de reformulación (dos búsquedas y dos pasadas por el reranker).
